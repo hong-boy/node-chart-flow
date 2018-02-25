@@ -1,0 +1,19 @@
+{
+    "presets":[
+        [
+            "env",
+            {
+                "targets":{
+                    "browsers":[
+                        "IE >= 9",
+                        "> 1%"
+                    ]
+                }
+            }
+        ]
+    ],
+    "plugins":[
+        "transform-runtime",
+        "transform-vue-jsx"
+    ]
+}

@@ -1,0 +1,10 @@
+node_moduels/
+docs/
+src/
+!src/scrollbars
+config/
+package-lock.json
+.editorconfig
+.gitignore
+.babelrc
+.travis.yml
