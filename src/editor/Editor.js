@@ -1,6 +1,8 @@
 'use strict';
 import * as d3 from 'd3'
 import merge from 'lodash.merge'
+import Node from './Node.js'
+import util from './Util.js'
 
 /**
  * 默认编辑器配置
@@ -49,7 +51,9 @@ class Editor {
     constructor(el, config){
         this.config = merge({}, DEFAULT_CONFIG, config);
         this.el = el;
-
+        this.___def = {
+            nodeType: new Map()
+        };
     }
     init(){
 
@@ -80,6 +84,11 @@ class Editor {
     }
     zoom(){
 
+    }
+    registerNodeType(nodeTypeName, config){
+        // 注册节点类型
+
+        this.___def.nodeType.set(nodeTypeName, config);
     }
 }
 
