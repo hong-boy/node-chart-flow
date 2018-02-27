@@ -1,8 +1,8 @@
 <template>
     <div class="df-editor">
-        <div class="dt-sidebar"></div>
-        <div class="dt-canvas"></div>
-        <div class="dt-helper"></div>
+        <div class="dt-palette"></div>
+        <div class="dt-canvas">canvas</div>
+        <div class="dt-helper">helper</div>
     </div>
 </template>
 
@@ -10,17 +10,28 @@
     import Editor from './Editor.js'
 
     export default {
+        name: 'NodeChartFlow',
+        props: {
+            registerNodeType: {type: Function},
+        },
         created(){
             let thiz = this;
             let config = {};
-            this.editor = new Editor(thiz.$el, config);
+            thiz.$nextTick(function () {
+                thiz.editor = new Editor(thiz.$el, config);
+                thiz.$emit('registerNodeType', thiz.editor);
+                thiz.editor.init();
+            })
+        },
+        destroyed(){
+            this.editor.destroy();
         },
         data(){
             return {
-                editor: null,
+                editor: {},
             };
         }
     }
 </script>
 
-<style lang="less"></style>
+<style lang="less" src="./css/editor.less"></style>

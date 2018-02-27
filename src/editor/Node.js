@@ -1,24 +1,17 @@
 'use strict';
-/**
- * 节点所属类别
- * PS：这里是节点类别，不是节点类型（节点类别下面可以有多中不同的节点类型）
- */
-const CATAGORY_LIST = {
-    defaults: 'defaults'
-};
 
 class Node {
     constructor(config={}){
         // 节点ID
-        this.id = config.id;
+        this.nodeId = config.nodeId;
         // 坐标
         this.x = config.x;
         // 坐标
         this.y = config.y;
         // 节点类别
-        this.catagory = config.catagory||CATAGORY_LIST.defaults;
+        this.catagory = config.catagory||'defaults';
         // 节点类型
-        this.type = config.type;
+        this.nodeTypeId = config.nodeTypeId;
         // 连接到当前节点的节点：array类型，形如：[nid, nid2]
         this.wires = config.wires;
         // 节点输入端口

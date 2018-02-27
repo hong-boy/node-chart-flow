@@ -5,6 +5,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const rootdir = path.join(__dirname, '../');
 
 module.exports = {
+    devtool: 'eval', // 方便源码调试
     entry: {
         // main: ['babel-polyfill', path.join(rootdir, 'src/main.js')]
         main: [path.join(rootdir, 'src/main.js')]

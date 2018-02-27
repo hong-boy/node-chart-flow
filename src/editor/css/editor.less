@@ -1,0 +1,124 @@
+.df-editor {
+    @fontColor: #666;
+    @width4palette: 180px;
+    @width4helper: 315px;
+    position: relative;
+    box-sizing: border-box;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: start;
+    justify-content: flex-start;
+    font-size: 14px;
+    .dt-palette {
+        display: inline-block;
+        width: @width4palette;
+        height: 100%;
+        background: #f3f3f3;
+        &.ui-accordion {
+            .ui-accordion-header {
+                color: @fontColor;
+                outline: none;
+                border-bottom: 1px solid #ccc;
+                border-top: 1px solid #ccc;
+                position: relative;
+                background: #f3f3f3;
+                cursor: pointer;
+                text-align: left;
+                padding: 9px;
+                font-weight: bold;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                margin-top: 0;
+                .ui-accordion-header-icon {
+                    display: none;
+                    position: absolute;
+                    top: 15px;
+                    left: 10px;
+                    border: 4px solid transparent;
+                    border-top-color: #666;
+                    transform-origin: top center;
+                    transition: all .2s linear;
+                }
+                &.ui-accordion-header-collapsed {
+                    // 菜单收起
+                    .ui-accordion-header-icon {
+                        top: 16px;
+                        transform: rotateZ(-90deg);
+                    }
+                }
+            }
+            .ui-accordion-content {
+                padding: 0;
+                background: #fff;
+            }
+            .node-tpl {
+                background: rgb(228, 145, 145);
+                height: 28px;
+                cursor: move;
+                margin: 10px auto;
+                border-radius: 5px;
+                border: 1px solid #999;
+                background-position: 5% 50%;
+                background-repeat: no-repeat;
+                width: 120px;
+                background-size: contain;
+                position: relative;
+                &:hover {
+                    border-color: #ff7f0e;
+                    .node-port {
+                        border-color: #999;
+                        background-color: #eee;
+                    }
+                }
+                .node-label {
+                    font-size: 13px;
+                    margin: 4px 0 4px 28px;
+                    line-height: 20px;
+                    overflow: hidden;
+                    text-align: center;
+                }
+                .node-icon-container {
+                    position: absolute;
+                    text-align: center;
+                    top: 0;
+                    bottom: 0;
+                    left: 0;
+                    width: 30px;
+                    border-right: 1px solid rgba(0,0,0,0.1);
+                    background-color: rgba(0,0,0,0.05);
+                }
+                .node-port {
+                    position: absolute;
+                    top: 8px;
+                    left: -5px;
+                    box-sizing: border-box;
+                    -moz-box-sizing: border-box;
+                    background: #d9d9d9;
+                    border-radius: 3px;
+                    width: 10px;
+                    height: 10px;
+                    border: 1px solid #999;
+                    &.node-port-outputs {
+                        left: auto;
+                        right: -6px;
+                    }
+                }
+            }
+        }
+    }
+    .dt-canvas {
+        display: inline-block;
+        flex-grow: 1;
+        height: 100%;
+        background:#77d176;
+    }
+    .dt-helper {
+        display: inline-block;
+        width: @width4helper;
+        height: 100%;
+        background:#94cad1;
+    }
+}
