@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:custom>
+<head>
+    <meta charset="UTF-8">
+    <title>D3 demo</title>
+    <script src="https://cdn.bootcss.com/d3/4.13.0/d3.min.js"></script>
+    <style type="text/css">
+        .canvas {
+            width: 500px;
+            height: 500px;
+            margin:0 auto;
+            border: 1px solid #ddd;
+            overflow: auto;
+        }
+        custom\:div {
+            font-size: 16px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="canvas"></div>
+<custom:div>
+    <span>I am a custom-div...</span>
+</custom:div>
+</body>
+<script type="text/javascript">
+    var svg = d3.select('.canvas').append('svg:svg')
+        .attr('width', 5000)
+        .attr('height', 5000)
+        .attr("pointer-events", "all")
+        .style("cursor","crosshair")
+        .on("contextmenu", function(){
+            // 屏蔽默认右键菜单事件
+            d3.event.preventDefault();
+        });
+
+    var g4visible = svg.append('svg:g')
+        .attr('class', 'inner-canvas');
+
+    var rect4bg = g4visible.append('svg:rect')
+        .attr('width', 5000)
+        .attr('height', 5000)
+        .attr('fill', '#fff');
+
+    var g4grid = g4visible.append('svg:g');
+
+    drawGrid(g4grid);
+
+    function drawGrid(g){
+        var arr = [];
+        for(var i = 0; i<5000; i+=20){
+            arr.push(i);
+        }
+        // horizonal
+        g.selectAll('line.horizonal')
+            .data(arr)
+            .enter()
+            .append('line')
+            .attr('class', 'horizonal')
+            .attr('x1', 0)
+            .attr('x2', 5000)
+            .attr('y1', function(d){ return d;})
+            .attr('y2', function(d){ return d;})
+            .attr('fill', 'none')
+            .attr('stroke', '#eee')
+            .attr('stroke-width', '1px')
+            .attr('shape-rendering', 'crispEdges');
+        // vertical
+        g.selectAll('line.vertical')
+            .data(arr)
+            .enter()
+            .append('line')
+            .attr('class', 'vertical')
+            .attr('y1', 0)
+            .attr('y2', 5000)
+            .attr('x1', function(d){ return d;})
+            .attr('x2', function(d){ return d;})
+            .attr('fill', 'none')
+            .attr('stroke', '#eee')
+            .attr('stroke-width', '1px')
+            .attr('shape-rendering', 'crispEdges')
+    }
+
+</script>
+</html>

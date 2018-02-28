@@ -1,6 +1,6 @@
-.df-editor {
+.dt-editor {
     @fontColor: #666;
-    @width4palette: 180px;
+    @width4palette: 165px;
     @width4helper: 315px;
     position: relative;
     box-sizing: border-box;
@@ -13,8 +13,9 @@
     font-size: 14px;
     .dt-palette {
         display: inline-block;
-        width: @width4palette;
+        min-width: @width4palette;
         height: 100%;
+        z-index: 1;
         background: #f3f3f3;
         &.ui-accordion {
             .ui-accordion-header {
@@ -51,14 +52,15 @@
                 }
             }
             .ui-accordion-content {
-                padding: 0;
+                padding: 5px 20px;
                 background: #fff;
             }
             .node-tpl {
                 background: rgb(228, 145, 145);
                 height: 28px;
                 cursor: move;
-                margin: 10px auto;
+                margin-top: 10px;
+                margin-bottom: 10px;
                 border-radius: 5px;
                 border: 1px solid #999;
                 background-position: 5% 50%;
@@ -109,16 +111,39 @@
             }
         }
     }
-    .dt-canvas {
-        display: inline-block;
+    .dt-workspace {
+        @dtFooterHeight: 26px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        justify-content: flex-start;
         flex-grow: 1;
         height: 100%;
+        width: 100%;
         background:#77d176;
+        overflow: auto;
+        z-index: 0;
+        .dt-canvas {
+            display: inline-block;
+            position: relative;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: ~"calc(100% - @{dtFooterHeight})";
+            background: #CDDC39;
+            overflow: auto;
+        }
+        .dt-footer {
+            width: 100%;
+            height: @dtFooterHeight;
+        }
     }
     .dt-helper {
         display: inline-block;
         width: @width4helper;
         height: 100%;
+        z-index: 1;
         background:#94cad1;
     }
 }

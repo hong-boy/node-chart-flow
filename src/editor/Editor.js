@@ -1,14 +1,13 @@
 'use strict';
-import * as d3 from 'd3'
 import $ from 'jquery'
 import Node from './Node.js'
-import util from './Util.js'
+import util from './ViewUtil.js'
+import Constant from './Constant.js'
 
 /**
  * 默认编辑器配置
  */
 const DEFAULT_CONFIG = {
-    debug: true, // 用于打印关键信息方便调试
     isReadonlyMode: false, // 是否启用只读模式（不允许拖动节点、删除节点、删除连线）
     palette: {
         catagory: { // 节点所属类别 PS：这里是节点类别，不是节点类型（节点类别下面可以有多中不同的节点类型）
@@ -32,23 +31,7 @@ const DEFAULT_CONFIG = {
             color: 'rgb(216, 191, 216)', // 节点背景色
             icon: null, // 节点图标
 
-            props: {
-                id: '', // 数据库端生成的ID
-                name: '', // 表名
-                sources: [], // 数据源
-                desc: '', // 描述
-                isStorage: 0, // 是否存储
-                scripts: {}, // 告警规则脚本
-                expression: '', // 告警表达式（用于前端展示）
-                fields: [{
-                    fieldId: null,
-                    fieldName: '',
-                    fieldType: 1,
-                    fieldDesc: '',
-                    isNew: true, // 是否为新节点
-                    isFixed: true, // 是否为固定字段
-                }],
-            },
+            props: {},
         }, { // 定义节点类型模板
             catagory: 'defaults', // 节点所属类别ID
             nodeTypeId: 'alarmNode2', // 节点类型唯一表示
@@ -68,17 +51,15 @@ const DEFAULT_CONFIG = {
             props: {},
         }],
     },
-    data: [{ // 节点实例
-
-    }],
+    // 节点实例
+    data: [],
     settings: {
-        width: 5000,
-        height: 5000,
+        size: 5000,
         showHelpDialog: true,
         grid: {
             enable: true,
             gap: 20,
-            strokeColor: '#ddd'
+            strokeColor: '#eee'
         }
     },
 };
@@ -104,11 +85,14 @@ class Editor {
      * @param config 编辑器的配置
      */
     constructor(el, config){
+        this._debug = true; // 用于打印关键信息方便调试
         this.config = $.extend(true, {}, DEFAULT_CONFIG, config);
         this.$el = $(el);
         this.$palette = this.$el.find('.dt-palette');
-        this.$canvas = this.$el.find('.dt-canvas');
+        this.$workspace = this.$el.find('.dt-workspace');
+        this.$canvas = this.$workspace.find('.dt-canvas').attr('id', Constant.CANVAS_ID);
         this.$helper = this.$el.find('.dt-helper');
+        this.___svg = null; // 存放d3生成的svg实例
         this.___def = {
             nodeType: new Map()
         };
@@ -125,6 +109,8 @@ class Editor {
         });
         // 绘制dt-palette
         util.renderPalette(thiz);
+        // 绘制dt-workspace
+        util.renderWorkspace(thiz);
 
     }
     update(){
@@ -159,7 +145,19 @@ class Editor {
         this.___def.nodeType.set(nodeTypeId, config);
     }
     getNodeType(){
+        // 返回已注册的节点类型
         return this.___def.nodeType;
+    }
+    log(...msg){
+        if(this._debug){
+            console.log(msg);
+        }
+    }
+    _setSVG(svg){
+        this.___svg = svg;
+    }
+    getSVG(){
+        return this.___svg;
     }
 }
 
