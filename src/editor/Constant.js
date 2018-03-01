@@ -10,4 +10,8 @@ export default {
     SVG_DT_NODE: 'dt-node',
     SVG_DT_LINE: 'dt-line',
     SVG_NODE_RECT: 'node-rect',
+    SVG_WIDTH_OF_NODE_ICON: 30, // .node-icon宽度
+    SVG_MIN_WIDTH_OF_NODE_RECT: 120, // .node-rect最新宽度
+    DEFAULT_CATAGORY: {id:'defaults', label:'Defaults'}, // 默认节点类别
+    DEFAULT_NODE_BG_COLOR: '#DEB887',
 }

@@ -2,6 +2,7 @@
     @fontColor: #666;
     @width4palette: 165px;
     @width4helper: 315px;
+    @color4selected: #ff7f0e;
     position: relative;
     box-sizing: border-box;
     height: 100%;
@@ -69,7 +70,7 @@
                 background-size: contain;
                 position: relative;
                 &:hover {
-                    border-color: #ff7f0e;
+                    border-color: @color4selected;
                     .node-port {
                         border-color: #999;
                         background-color: #eee;
@@ -77,10 +78,13 @@
                 }
                 .node-label {
                     font-size: 13px;
-                    margin: 4px 0 4px 28px;
+                    margin: 4px 0 4px 30px;
                     line-height: 20px;
                     overflow: hidden;
                     text-align: center;
+                    pointer-events: none;
+                    user-select: none;
+                    stroke: none;
                 }
                 .node-icon-container {
                     position: absolute;
@@ -88,7 +92,8 @@
                     top: 0;
                     bottom: 0;
                     left: 0;
-                    width: 30px;
+                    height: 30px;
+                    width: 28px;
                     border-right: 1px solid rgba(0,0,0,0.1);
                     background-color: rgba(0,0,0,0.05);
                 }
@@ -137,6 +142,24 @@
         .dt-footer {
             width: 100%;
             height: @dtFooterHeight;
+        }
+        .dt-node {
+            cursor: move;
+            &.selected {
+                .node-rect {
+                    stroke: @color4selected;
+                }
+            }
+        }
+        .node-rect {
+            stroke: #999;
+            cursor: move;
+            stroke-width: 1;
+        }
+        .node-label {
+            pointer-events: none;
+            user-select: none;
+            stroke: none;
         }
     }
     .dt-helper {

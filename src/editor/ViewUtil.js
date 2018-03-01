@@ -1,6 +1,7 @@
 'use strict';
 import * as d3 from 'd3'
 import $ from 'jquery'
+import uuid from 'uuid/v4'
 import 'jquery-ui/ui/widgets/accordion.js'
 import 'jquery-ui/ui/widgets/draggable.js'
 import 'jquery-ui/ui/widgets/droppable.js'
@@ -11,7 +12,7 @@ import Constant from './Constant.js'
 class ViewUtil {
     static getNodeTpl4SVG(nodeTypeConfig, editor){
         // .dt-canvas
-        /*<g class="dt-node">
+        /*<g class="dt-node" id="">
             <rect class="node-rect"></rect>
             <g class="node-icon-group">
                 <rect class="shape"></rect>
@@ -51,6 +52,7 @@ class ViewUtil {
             .attr('width', 30)
             .attr('height', 30)
             .attr('fill', '#000')
+            .attr('stroke', 'none')
             .attr('fill-opacity', 0.05);
         g4icons.append('span').attr('class', `icon ${nodeTypeConfig.icon}`);
         g4icons.append('svg:path')
@@ -66,7 +68,7 @@ class ViewUtil {
             .attr('y', 14)
             .attr('dy', '0.35em')
             .attr('text-anchor', 'start')
-            .text('nodeTypeConfig.label'); // TODO - 显示默认名称
+            .text($.isFunction(nodeTypeConfig.label) ? nodeTypeConfig.label.call(null, editor) : nodeTypeConfig.label);
         // g.port.inputs
         g4node.append('svg:g')
             .attr('class', 'port inputs')
@@ -94,11 +96,11 @@ class ViewUtil {
 
         return g4node;
     }
-    static getNodeTpl4Palette(nodeTypeConfig){
+    static getNodeTpl4Palette(nodeTypeConfig, editor){
         // 获取节点html模板 - .dt-palette
         let $tpl = $(
             '<div class="node-tpl">' +
-            `<div class="node-label">${$.isFunction(nodeTypeConfig.label) ? nodeTypeConfig.label.call(nodeTypeConfig) : nodeTypeConfig.label}</div>` + // 节点label
+            `<div class="node-label">${$.isFunction(nodeTypeConfig.label) ? nodeTypeConfig.label.call(null, editor) : nodeTypeConfig.label}</div>` + // 节点label
             `<div class="node-icon-container"><span class="${nodeTypeConfig.icon||''}"></span></div>` + // 节点icon
             (nodeTypeConfig.inputs.enable ? '<div class="node-port node-port-inputs"></div>' : '') + // 节点输入端口
             (nodeTypeConfig.outputs.enable ? '<div class="node-port node-port-outputs"></div>' : '') + // 节点输出端口
@@ -106,27 +108,31 @@ class ViewUtil {
         );
         $tpl.data(Constant.PALETTE_NODE_CONFIG, nodeTypeConfig);
         nodeTypeConfig.color && $tpl.css('background-color', nodeTypeConfig.color);
+        console.log($tpl.html(), nodeTypeConfig);
         return $tpl;
     }
     static renderCatagory(catagory, $palette){
         // 渲染节点类别列表
-        if(catagory && catagory.list){
-            let arr = [];
-            catagory.list.forEach(cata=>{
-                arr.push(
-                    `<header class="cata-label">${cata.label}</header>` +
-                    `<section class="cata-section" id="${Constant.PREFIX_OF_CATAGORY+cata.id}"></section>`
-                );
-            });
-            $palette.append(arr.join(''));
+        if(!catagory){
+            throw Error('节点类别为空：registerNodeCatagory');
         }
+        let arr = [];
+        catagory.forEach(cata=>{
+            arr.push(
+                `<header class="cata-label">${cata.label}</header>` +
+                `<section class="cata-section" id="${Constant.PREFIX_OF_CATAGORY+cata.id}"></section>`
+            );
+        });
+        $palette.append(arr.join(''));
     }
     static renderPalette(editor){
         let $palette = editor.$palette;
-        let config = editor.config;
-        ViewUtil.renderCatagory(config.palette.catagory, $palette);
-        editor.getNodeType().forEach((nodeTypeConfig, nodeTypeId)=>{
-            let $nodePaletteTpl = ViewUtil.getNodeTpl4Palette(nodeTypeConfig);
+        // 先渲染节点类别
+        ViewUtil.renderCatagory(editor.getNodeCatagory(), $palette);
+        // 再渲染节点类型
+        editor.getNodeTypes().forEach((RealNodeType)=>{
+            let nodeTypeConfig = new RealNodeType();
+            let $nodePaletteTpl = ViewUtil.getNodeTpl4Palette(nodeTypeConfig, editor);
             let $nodeWrapper = $palette.find(`#${Constant.PREFIX_OF_CATAGORY + nodeTypeConfig.catagory}`);
             $nodeWrapper.append($nodePaletteTpl);
         });
@@ -138,36 +144,102 @@ class ViewUtil {
         // 绑定拖拽事件
         ViewUtil.dragAndDrop4Palette(editor);
     }
+    static transform(node4svg, x, y){
+        node4svg.attr('transform', `translate(${parseInt(x)}, ${parseInt(y)})`);
+    }
     static dragAndDrop4Palette(editor){
         // 绑定拖拽事件 - dt-palette
         let start = function (e, ui) {
             let nodeTypeConfig = $(e.target).data(Constant.PALETTE_NODE_CONFIG);
-            ui.helper.data(Constant.PALETTE_NODE_CONFIG, nodeTypeConfig);
-            editor.log('dragstart...', nodeTypeConfig);
-        };
-        let drag = function(e, ui){
-            // editor.log('dragging...');
+            ui.helper.data(Constant.PALETTE_NODE_CONFIG, nodeTypeConfig.nodeTypeId);
         };
         let drop = function(e, ui){
+            let factor = 11; // y轴总是有11px的误差 (待观察)- TODO
             let offset = ui.offset;
             let offset4thiz = $(this).offset();
-            let nodeTypeConfig = ui.helper.data(Constant.PALETTE_NODE_CONFIG);
-            let node4svg = ViewUtil.getNodeTpl4SVG(nodeTypeConfig, editor);
-            node4svg.attr('transform', `translate(${offset.left - offset4thiz.left}, ${offset.top - offset4thiz.top})`);
-            editor.log('drop...', offset, $(this).offset(), node4svg.attr('transform'));
+            let $canvas = editor.$canvas;
+            let y = $canvas.scrollTop() + offset.top - offset4thiz.top + factor;
+            let x = $canvas.scrollLeft() + offset.left - offset4thiz.left;
+            let nodeTypeId = ui.helper.data(Constant.PALETTE_NODE_CONFIG);
+            let RealNodeType = editor.getNodeTypes().get(nodeTypeId);
+            let nodeId = uuid();
+            let nodeTypeConfig = new RealNodeType();
+            nodeTypeConfig.x = x;
+            nodeTypeConfig.y = y;
+            nodeTypeConfig.nodeId = nodeId;
+            ViewUtil._drawNodeOnCanvas(nodeTypeConfig, editor);
+            editor.log('drop...', nodeTypeConfig);
         };
         $('.node-tpl', editor.$palette).draggable({
             helper: 'clone',
             revert: 'invalid',
             containment: editor.$el,
             start,
-            drag,
         });
         editor.$canvas.droppable({
             accept: '.node-tpl',
             tolerance: 'fit',
             drop,
         });
+    }
+    static _calcTextWidth(labelTxt){
+        // 计算节点label宽度
+        let $span = $('<span>').css({
+            position: 'absolute',
+            top: '-9999px'
+        }).text(labelTxt);
+        let width = $span.appendTo('body').width();
+        $span.remove();
+        return width;
+    }
+    static _updateNodeSize(node4svg, editor){
+        // 更新节点尺寸
+        let labelTxt = node4svg.select('.node-label').text();
+        let width = ViewUtil._calcTextWidth(labelTxt);
+        let width4rect = Math.max(width + Constant.SVG_WIDTH_OF_NODE_ICON, Constant.SVG_MIN_WIDTH_OF_NODE_RECT);
+        node4svg.select(`.${Constant.SVG_NODE_RECT}`).attr('width', width4rect);
+        editor.log('updateNodeSize', width, width4rect);
+    }
+    static _dragNodeOnCanvas(editor){
+        // 在画布中定义节点的拖拽行为
+        let inst4drag = ViewUtil.inst4drag;
+        // let inst4drag;
+        return function () {
+            if(!inst4drag){
+                console.log('111111111');
+                let start = function (d){
+                    d3.event.x = d.x;
+                    d3.event.y = d.y;
+                    editor.log('node (g) drag start...', d, d3.event.x, d3.event.y, this.parentNode, d3.event.target);
+                };
+                let drag = function (d){
+                    // editor.log('node (g) draging...', d, d3.event.x, d3.event.y);
+                    ViewUtil.transform(d3.select(this), d3.event.x, d3.event.y);
+                };
+                let end = function (d){
+                    let x = d3.event.x;
+                    let y = d3.event.y;
+                    d.x = x;
+                    d.y = y;
+                    editor.log('node (g) drag end...', d, x, y);
+                };
+                inst4drag = ViewUtil.inst4drag = d3.drag()
+                    .on('start', start)
+                    .on('drag', drag)
+                    .on('end', end);
+            }
+            return inst4drag;
+        };
+    }
+    static _drawNodeOnCanvas(config, editor){
+        // 添加节点到画布
+        let node4svg = ViewUtil.getNodeTpl4SVG(config, editor);
+        node4svg.datum(config);
+        ViewUtil.transform(node4svg, config.x, config.y);
+        ViewUtil._updateNodeSize(node4svg, editor);
+        // TODO - 给节点绑定拖拽事件
+        node4svg.call(ViewUtil._dragNodeOnCanvas(editor)());
+        return node4svg;
     }
     static _drawSVGCanvas(settings){
         // 绘制svg节点

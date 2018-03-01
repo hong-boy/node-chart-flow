@@ -11,26 +11,32 @@
         },
         methods: {
             registerNodeType(editor){
-                let nodeTypeConfig = {
-                    catagory: 'defaults',
-                    nodeTypeId: 'transform',
-                    label: function(){return this.props.tblName||'transform'},
-                    inputs: {
-                        enable: true,
-                        max: 1,
-                        tip: '转换节点只允许有一个输入...',
-                    },
-                    outputs: {
-                        enable: true,
-                        max: 1,
-                    },
-                    color: 'rgb(176, 223, 227)', // 节点背景色
-                    icon: null, // 节点图标
-                    props: {}
-                };
-                // TODO - nodeTypeHtml
-                // TODO - nodeTypeHelper
-                editor.registerNodeType('transform', nodeTypeConfig)
+                editor.registerNodeType(function (NodeType) {
+                    class TransformNodeType extends  NodeType {
+                        constructor(){
+                            super();
+                            this.icon = null;
+                            this.props = {};
+                            this.nodeTypeId = 'transformNode';
+                            this.color = 'rgb(176, 223, 227)';
+                            this.label = function (editor) {
+                                return 'transform';
+                            };
+                            this.inputs = {
+                                enable: true,
+                                max: 1,
+                                tip: '描述...'
+                            };
+                            this.outputs = {
+                                enable: true,
+                                max: 1,
+                                tip: '描述...'
+                            };
+                        }
+                    }
+                    TransformNodeType.id = 'transformNode';
+                    return TransformNodeType;
+                });
             },
         },
     }

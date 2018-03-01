@@ -1,6 +1,6 @@
 'use strict';
 import $ from 'jquery'
-import Node from './Node.js'
+import NodeType from './NodeType.js'
 import util from './ViewUtil.js'
 import Constant from './Constant.js'
 
@@ -9,48 +9,6 @@ import Constant from './Constant.js'
  */
 const DEFAULT_CONFIG = {
     isReadonlyMode: false, // 是否启用只读模式（不允许拖动节点、删除节点、删除连线）
-    palette: {
-        catagory: { // 节点所属类别 PS：这里是节点类别，不是节点类型（节点类别下面可以有多中不同的节点类型）
-            list: [{
-                id: 'defaults',
-                label: 'Defaults'
-            }]
-        },
-        nodeType: [{ // 定义节点类型模板
-            catagory: 'defaults', // 节点所属类别ID
-            nodeTypeId: 'alarmNode', // 节点类型唯一表示
-            label: function(){return this.props.tblName||'alarm1'}, // 节点label（可以为string或者function，this指代当前节点实例）
-            inputs: {
-                enable: true, // 是否允许有数据源输入
-                max: 1, // 最多允许的数据源数量：n-允许有n个输入（默认：n=1）
-                tip: '告警节点只允许有一个输入...', // 鼠标悬停在输入端口按钮时显示的信息
-            },
-            outputs: {
-                enable: false,
-            },
-            color: 'rgb(216, 191, 216)', // 节点背景色
-            icon: null, // 节点图标
-
-            props: {},
-        }, { // 定义节点类型模板
-            catagory: 'defaults', // 节点所属类别ID
-            nodeTypeId: 'alarmNode2', // 节点类型唯一表示
-            label: function(){return this.props.tblName||'alarm2'}, // 节点label（可以为string或者function，this指代当前节点实例）
-            inputs: {
-                enable: true, // 是否允许有数据源输入
-                max: 1, // 最多允许的数据源数量：n-允许有n个输入（默认：n=1）
-                tip: '告警2节点只允许有一个输入...', // 鼠标悬停在输入端口按钮时显示的信息
-            },
-            outputs: {
-                enable: true,
-                max: 1,
-            },
-            color: 'rgb(228, 145, 145)', // 节点背景色
-            icon: null, // 节点图标
-
-            props: {},
-        }],
-    },
     // 节点实例
     data: [],
     settings: {
@@ -94,19 +52,17 @@ class Editor {
         this.$helper = this.$el.find('.dt-helper');
         this.___svg = null; // 存放d3生成的svg实例
         this.___def = {
-            nodeType: new Map()
+            NodeCatagory: new Set(), // 节点类别
+            NodeTypes: new Map(), // 节点类型模板类
         };
     }
     init(){
         let thiz = this;
         let config = thiz.config;
         // 注册节点类型
-        if(!(Array.isArray(config.palette.nodeType) && config.palette.nodeType.length)){
-            throw Error('nodeType为空：请先配置节点类型');
+        if(!thiz.getNodeTypes().size){
+            throw Error('请先注册节点类型：registerNodeType()');
         }
-        config.palette.nodeType.forEach(nodeType=>{
-            thiz.registerNodeType(nodeType.nodeTypeId, new Node(nodeType));
-        });
         // 绘制dt-palette
         util.renderPalette(thiz);
         // 绘制dt-workspace
@@ -140,13 +96,31 @@ class Editor {
     zoom(){
 
     }
-    registerNodeType(nodeTypeId, config){
-        // 注册节点类型
-        this.___def.nodeType.set(nodeTypeId, config);
+    registerCatagory(cata){
+        // 注册节点类别
+        let catagory = this.getNodeCatagory();
+        catagory.add({
+            id: cata.id,
+            label: cata.label||cata.id
+        });
     }
-    getNodeType(){
+    registerNodeType(func){
+        // 注册节点类型模板
+        let RealNodeType = func.call(null, NodeType);
+        this.___def.NodeTypes.set(RealNodeType.id, RealNodeType);
+    }
+    getNodeCatagory(){
+        // 返回注册的节点类别
+        let set = this.___def.NodeCatagory;
+        if(!set.size){
+            // 若catagory为空，则默认添加一个类别
+            set.add(Constant.DEFAULT_CATAGORY);
+        }
+        return set;
+    }
+    getNodeTypes(){
         // 返回已注册的节点类型
-        return this.___def.nodeType;
+        return this.___def.NodeTypes;
     }
     log(...msg){
         if(this._debug){
