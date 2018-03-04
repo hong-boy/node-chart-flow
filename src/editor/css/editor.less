@@ -12,18 +12,22 @@
     align-items: start;
     justify-content: flex-start;
     font-size: 14px;
+    .hide {
+        display: none;
+    }
     .dt-palette {
         display: inline-block;
         min-width: @width4palette;
         height: 100%;
         z-index: 1;
         background: #f3f3f3;
+        border: 1px solid #bbb;
+        box-sizing: border-box;
         &.ui-accordion {
             .ui-accordion-header {
                 color: @fontColor;
                 outline: none;
                 border-bottom: 1px solid #ccc;
-                border-top: 1px solid #ccc;
                 position: relative;
                 background: #f3f3f3;
                 cursor: pointer;
@@ -92,10 +96,13 @@
                     top: 0;
                     bottom: 0;
                     left: 0;
-                    height: 30px;
+                    height: 28px;
                     width: 28px;
-                    border-right: 1px solid rgba(0,0,0,0.1);
-                    background-color: rgba(0,0,0,0.05);
+                    border-right: 1px solid rgba(0, 0, 0, 0.1);
+                    background-color: rgba(0, 0, 0, 0.05);
+                    box-sizing: border-box;
+                    border-top-left-radius: 5px;
+                    border-bottom-left-radius: 5px;
                 }
                 .node-port {
                     position: absolute;
@@ -112,6 +119,14 @@
                         left: auto;
                         right: -6px;
                     }
+                }
+                .dt-icon {
+                    display: inline-block;
+                    width: 20px;
+                    height: 29px;
+                    background-position: 50% 50%;
+                    background-size: contain;
+                    background-repeat: no-repeat;
                 }
             }
         }
@@ -151,15 +166,42 @@
                 }
             }
         }
+        .dt-line {
+            .path-line {
+                stroke: #888;
+                stroke-width: 3;
+                fill: none;
+                pointer-events: none;
+            }
+        }
         .node-rect {
             stroke: #999;
             cursor: move;
-            stroke-width: 1;
+            stroke-width: 2;
         }
         .node-label {
             pointer-events: none;
             user-select: none;
             stroke: none;
+        }
+        .node-status {
+            stroke: #666;
+            stroke-width: 2px;
+        }
+        .port {
+            &.inputs {
+                transform: translate(-5px, 10px);
+            }
+            .node-port {
+                stroke: #999;
+                stroke-width: 1;
+                fill: #ddd;
+                cursor: crosshair;
+                &.hovered {
+                    stroke: #ff7f0e;
+                    fill: #ff7f0e;
+                }
+            }
         }
     }
     .dt-helper {

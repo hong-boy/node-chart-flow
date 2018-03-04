@@ -107,7 +107,7 @@ class Editor {
     registerNodeType(func){
         // 注册节点类型模板
         let RealNodeType = func.call(null, NodeType);
-        this.___def.NodeTypes.set(RealNodeType.id, RealNodeType);
+        this.___def.NodeTypes.set(RealNodeType.id(), RealNodeType);
     }
     getNodeCatagory(){
         // 返回注册的节点类别

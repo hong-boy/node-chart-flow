@@ -36,6 +36,9 @@ class NodeType {
         // 节点自定义属性（业务属性）
         this.props = null;
     }
+    static id(){
+        throw '必须重新static id()方法'
+    }
 }
 
 export default NodeType;

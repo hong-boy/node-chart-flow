@@ -16,7 +16,7 @@ class ViewUtil {
             <rect class="node-rect"></rect>
             <g class="node-icon-group">
                 <rect class="shape"></rect>
-                <span class="icon"></span>
+                <image class="icon"></image>
                 <path class="shape-border"></path>
             </g>
             <text class="node-label"></text>
@@ -26,11 +26,11 @@ class ViewUtil {
             <g class="port outputs">
                 <rect class="node-port"></rect>
             </g>
-             <span class="node-status error"></span>
-             <span class="node-status changed"></span>
+             <rect class="node-status error"></rect>
+             <rect class="node-status changed"></rect>
         </g>*/
-        let g = editor.getSVG().select(`.${Constant.SVG_INNER_CANVAS}`);
-        let g4node = g.append('svg:g').attr('class', Constant.SVG_DT_NODE);
+        let g = editor.getSVG().select(`.${Constant.SVG_DT_NODE_GROUP}`);
+        let g4node = g.append('svg:g').attr('class', Constant.SVG_DT_NODE).attr('id', nodeTypeConfig.nodeId);
         // rect.node-rect
         g4node.append('svg:rect')
             .attr('class', 'node-rect')
@@ -54,7 +54,12 @@ class ViewUtil {
             .attr('fill', '#000')
             .attr('stroke', 'none')
             .attr('fill-opacity', 0.05);
-        g4icons.append('span').attr('class', `icon ${nodeTypeConfig.icon}`);
+        g4icons.append('image')
+            .attr('x', 5)
+            .attr('y', 0)
+            .attr('width', 20)
+            .attr('height', 30)
+            .attr('href', `${nodeTypeConfig.icon || require('./css/icon/default.png')}`);
         g4icons.append('svg:path')
             .attr('class', 'shape-border')
             .attr('d', 'M 30 1 l 0 28')
@@ -70,28 +75,40 @@ class ViewUtil {
             .attr('text-anchor', 'start')
             .text($.isFunction(nodeTypeConfig.label) ? nodeTypeConfig.label.call(null, editor) : nodeTypeConfig.label);
         // g.port.inputs
-        g4node.append('svg:g')
+        nodeTypeConfig.inputs.enable && g4node.append('svg:g')
             .attr('class', 'port inputs')
             .append('svg:rect')
-            .attr('class', 'node-port')
-            .attr('rx', 5)
-            .attr('ry', 5)
+            .attr('class', 'node-port node-port-input')
+            .attr('rx', 3)
+            .attr('ry', 3)
             .attr('width', 10)
             .attr('height', 10);
         // g.port.outputs
-        g4node.append('svg:g')
+        nodeTypeConfig.outputs.enable && g4node.append('svg:g')
             .attr('class', 'port outputs')
             .append('svg:rect')
-            .attr('class', 'node-port')
-            .attr('rx', 5)
-            .attr('ry', 5)
+            .attr('class', 'node-port node-port-output')
+            .attr('rx', 3)
+            .attr('ry', 3)
             .attr('width', 10)
             .attr('height', 10);
         // span.node-status.error
-        g4node.append('span')
-            .attr('class', 'node-status error');
+        g4node.append('svg:rect')
+            .attr('fill', Constant.DEFAULT_NODE_STATUS_ERROR_COLOR)
+            .attr('width', 8)
+            .attr('height', 8)
+            .attr('y', -4)
+            .attr('rx', 5)
+            .attr('ry', 5)
+            .attr('class', 'node-status error hide');
         // span.node-status.changed
-        g4node.append('span')
+        g4node.append('svg:rect')
+            .attr('fill', Constant.DEFAULT_NODE_STATUS_CHANGED_COLOR)
+            .attr('width', 8)
+            .attr('height', 8)
+            .attr('y', -4)
+            .attr('rx', 5)
+            .attr('ry', 5)
             .attr('class', 'node-status changed');
 
         return g4node;
@@ -101,7 +118,7 @@ class ViewUtil {
         let $tpl = $(
             '<div class="node-tpl">' +
             `<div class="node-label">${$.isFunction(nodeTypeConfig.label) ? nodeTypeConfig.label.call(null, editor) : nodeTypeConfig.label}</div>` + // 节点label
-            `<div class="node-icon-container"><span class="${nodeTypeConfig.icon||''}"></span></div>` + // 节点icon
+            `<div class="node-icon-container"><span class="dt-icon" style="background-image:url(${nodeTypeConfig.icon||require('./css/icon/default.png')})"></span></div>` + // 节点icon
             (nodeTypeConfig.inputs.enable ? '<div class="node-port node-port-inputs"></div>' : '') + // 节点输入端口
             (nodeTypeConfig.outputs.enable ? '<div class="node-port node-port-outputs"></div>' : '') + // 节点输出端口
             '</div>'
@@ -190,15 +207,45 @@ class ViewUtil {
         }).text(labelTxt);
         let width = $span.appendTo('body').width();
         $span.remove();
-        return width;
+        return parseInt(width);
     }
     static _updateNodeSize(node4svg, editor){
         // 更新节点尺寸
         let labelTxt = node4svg.select('.node-label').text();
         let width = ViewUtil._calcTextWidth(labelTxt);
         let width4rect = Math.max(width + Constant.SVG_WIDTH_OF_NODE_ICON, Constant.SVG_MIN_WIDTH_OF_NODE_RECT);
+        // 设置节点宽度
         node4svg.select(`.${Constant.SVG_NODE_RECT}`).attr('width', width4rect);
+        // 设置node-status位置
+        node4svg.select(Constant.SVG_SELECTOR_NODE_STATUS_CHANGED).attr('x', width4rect - 10);
+        node4svg.select(Constant.SVG_SELECTOR_NODE_STATUS_ERROR).attr('x', width4rect - 25);
+        // 设置port.inputs位置
+        ViewUtil.transform(node4svg.select('.port.inputs'), -5, 10);
+        // 设置port.outputs位置
+        ViewUtil.transform(node4svg.select('.port.outputs'), width4rect-5, 10);
         editor.log('updateNodeSize', width, width4rect);
+    }
+
+    /**
+     * 生成line路径
+     * @param from{
+     * x,y,w,h
+     * }
+     * @param to{
+     * x,y
+     * }
+     * @private
+     */
+    static _generateLinePath(from, to){
+        let NODE_WIDTH = 100;
+        let NODE_HEIGHT = 30;
+        let pathArr = [
+            `M ${from.x + from.w} ${from.y + from.h/2} `,
+            `C ${from.x + from.w + NODE_WIDTH} ${from.y + from.h/2 + NODE_HEIGHT} `,
+            `${to.x - NODE_WIDTH} ${to.y - NODE_HEIGHT} `,
+            `${to.x} ${to.y} `,
+        ];
+        return pathArr.join('');
     }
     static _dragNodeOnCanvas(editor){
         // 在画布中定义节点的拖拽行为
@@ -206,15 +253,14 @@ class ViewUtil {
         // let inst4drag;
         return function () {
             if(!inst4drag){
-                console.log('111111111');
                 let start = function (d){
                     d3.event.x = d.x;
                     d3.event.y = d.y;
-                    editor.log('node (g) drag start...', d, d3.event.x, d3.event.y, this.parentNode, d3.event.target);
+                    editor.log('node (g) drag start...', d, d3.event.dx, d3.event.dy);
                 };
                 let drag = function (d){
-                    // editor.log('node (g) draging...', d, d3.event.x, d3.event.y);
                     ViewUtil.transform(d3.select(this), d3.event.x, d3.event.y);
+                    editor.log('node (g) draging...', d, d3.event.dx, d3.event.dy);
                 };
                 let end = function (d){
                     let x = d3.event.x;
@@ -237,8 +283,59 @@ class ViewUtil {
         node4svg.datum(config);
         ViewUtil.transform(node4svg, config.x, config.y);
         ViewUtil._updateNodeSize(node4svg, editor);
-        // TODO - 给节点绑定拖拽事件
+        // 给节点绑定拖拽事件
         node4svg.call(ViewUtil._dragNodeOnCanvas(editor)());
+        // 给节点.port > .node-port绑定mouseenter事件
+        node4svg.selectAll('.node-port')
+            .on('mousedown', function () {
+                let rect = node4svg.select('.node-rect');
+                let nodeData = node4svg.datum();
+                let svg = editor.getSVG();
+                let group4line = svg.select(`.${Constant.SVG_DT_LINE_GROUP}`);
+                let pathData = ViewUtil._generateLinePath(
+                    {x:nodeData.x, y:nodeData.y, w:parseInt(rect.attr('width')),h:parseInt(rect.attr('height'))},
+                    {x:nodeData.x+parseInt(rect.attr('width')), y:nodeData.y+parseInt(rect.attr('height'))});
+                let gLine = group4line.append('svg:g')
+                    .classed('dt-line', true);
+                let line = gLine.append('svg:path')
+                    .classed('path-line', true)
+                    .attr('d', pathData);
+
+                svg.on('mouseup.port', function () {
+                    let target = d3.select(d3.event.target);
+                    let target4node = null;
+                    // 判断终端节点是否合法
+                    if(target.classed(Constant.SVG_NODE_PORT) || target.classed(Constant.SVG_NODE_STATUS)){
+                        target4node = d3.select(target.node().parentNode.parentNode);
+                    }else if(target.classed(Constant.SVG_NODE_RECT)){
+                        target4node = d3.select(target.node().parentNode);
+                    }
+                    if(!target4node || target4node.attr('id') === node4svg.attr('id')){
+                        // 若终端节点不合法则移除
+                        gLine.remove();
+                    }
+                    // 移除监听器
+                    svg.on('.port', null);
+                    d3.event.stopPropagation();
+                });
+                svg.on('mousemove.port', function(){
+                    // TODO - 给节点outputs端口添加mousedown事件（用于绘制连线）
+                    let mousePos = d3.mouse(this);
+                    let pathData = ViewUtil._generateLinePath(
+                        {x:nodeData.x, y:nodeData.y, w:parseInt(rect.attr('width')),h:parseInt(rect.attr('height'))},
+                        {x:mousePos[0], y:mousePos[1]});
+                    line.attr('d', pathData);
+                    d3.event.stopPropagation();
+                    d3.event.preventDefault();
+                });
+                d3.event.stopPropagation();
+            })
+            .on('mouseenter', function () {
+                d3.select(this).classed('hovered', true);
+            })
+            .on('mouseleave', function () {
+                d3.select(this).classed('hovered', false);
+            });
         return node4svg;
     }
     static _drawSVGCanvas(settings){
@@ -311,26 +408,28 @@ class ViewUtil {
                     <line class="horizonal"></line>
                     <line class="vertical"></line>
                 </g>
-                <g class="dt-link"></g>
+                <g class="dt-link-group"></g>
+                <g class="dt-node-group">
                  <g class="dt-node">
-                    <rect class="node-rect"></rect>
-                     <g class="node-icon-group">
-                         <rect class="shape"></rect>
-                         <span class="icon"></span>
-                         <path class="shape-border"></path>
-                     </g>
-                    <text class="node-label"></text>
-                     <g class="node-status-group">
-                         <span class="status error"></span>
-                         <span class="status changed"></span>
-                     </g>
-                     <g class="port inputs">
-                        <rect class="node-port"></rect>
-                     </g>
-                     <g class="port outputs">
-                        <rect class="node-port"></rect>
-                     </g>
+                 <rect class="node-rect"></rect>
+                 <g class="node-icon-group">
+                 <rect class="shape"></rect>
+                 <span class="icon"></span>
+                 <path class="shape-border"></path>
                  </g>
+                 <text class="node-label"></text>
+                 <g class="node-status-group">
+                 <span class="status error"></span>
+                 <span class="status changed"></span>
+                 </g>
+                 <g class="port inputs">
+                 <rect class="node-port"></rect>
+                 </g>
+                 <g class="port outputs">
+                 <rect class="node-port"></rect>
+                 </g>
+                 </g>
+                </g>
                 </g>
         </svg>*/
         // 绘制svg
@@ -342,6 +441,8 @@ class ViewUtil {
         // 绘制网格grid
         let grid = g4canvas.append('svg:g').attr('class', Constant.SVG_GRID);
         ViewUtil._drawGrid(grid, settings);
+        g4canvas.append('svg:g').classed(Constant.SVG_DT_LINE_GROUP, true);
+        g4canvas.append('svg:g').classed(Constant.SVG_DT_NODE_GROUP, true);
         // TODO - 渲染dt-footer
     }
 }
