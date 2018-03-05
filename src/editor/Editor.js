@@ -54,6 +54,7 @@ class Editor {
         this.___def = {
             NodeCatagory: new Set(), // 节点类别
             NodeTypes: new Map(), // 节点类型模板类
+            Relations: new Map(), // 节点连线
         };
     }
     init(){
@@ -132,6 +133,21 @@ class Editor {
     }
     getSVG(){
         return this.___svg;
+    }
+    _setRelation(from, to, line, id){
+        this.___def.Relations.set(id, {
+            id: id,
+            from: from,
+            to: to,
+            line: line,
+        });
+        return id;
+    }
+    _removeRelation(id){
+        this.___def.Relations.delete(id);
+    }
+    getRelations(){
+        return this.___def.Relations;
     }
 }
 

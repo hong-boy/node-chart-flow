@@ -10,6 +10,9 @@ import 'jquery-ui/themes/base/draggable.css'
 import Constant from './Constant.js'
 
 class ViewUtil {
+    static uuid(){
+        return uuid();
+    }
     static getNodeTpl4SVG(nodeTypeConfig, editor){
         // .dt-canvas
         /*<g class="dt-node" id="">
@@ -225,20 +228,10 @@ class ViewUtil {
         ViewUtil.transform(node4svg.select('.port.outputs'), width4rect-5, 10);
         editor.log('updateNodeSize', width, width4rect);
     }
-
-    /**
-     * 生成line路径
-     * @param from{
-     * x,y,w,h
-     * }
-     * @param to{
-     * x,y
-     * }
-     * @private
-     */
     static _generateLinePath(from, to){
-        let NODE_WIDTH = 100;
-        let NODE_HEIGHT = 30;
+        // 生成连线路径
+        let NODE_WIDTH = Constant.SVG_LINE_FACTOR_NODE_WIDTH;
+        let NODE_HEIGHT = Constant.SVG_LINE_FACTOR_NODE_HEIGHT;
         let pathArr = [
             `M ${from.x + from.w} ${from.y + from.h/2} `,
             `C ${from.x + from.w + NODE_WIDTH} ${from.y + from.h/2 + NODE_HEIGHT} `,
@@ -249,33 +242,180 @@ class ViewUtil {
     }
     static _dragNodeOnCanvas(editor){
         // 在画布中定义节点的拖拽行为
-        let inst4drag = ViewUtil.inst4drag;
+        let inst4drag = editor.___inst4drag;
         // let inst4drag;
         return function () {
             if(!inst4drag){
                 let start = function (d){
                     d3.event.x = d.x;
                     d3.event.y = d.y;
-                    editor.log('node (g) drag start...', d, d3.event.dx, d3.event.dy);
                 };
                 let drag = function (d){
-                    ViewUtil.transform(d3.select(this), d3.event.x, d3.event.y);
-                    editor.log('node (g) draging...', d, d3.event.dx, d3.event.dy);
+                    let x = d3.event.x;
+                    let y = d3.event.y;
+                    d.x = x;
+                    d.y = y;
+                    let node = d3.select(this);
+                    // TODO - 判断节点是否越过边界
+                    ViewUtil.isOverstepBoundary(editor, node);
+                    // 拖动节点
+                    ViewUtil.transform(node, d3.event.x, d3.event.y);
+                    // 更新连线位置
+                    ViewUtil.updateAllLinePath(editor);
                 };
                 let end = function (d){
                     let x = d3.event.x;
                     let y = d3.event.y;
                     d.x = x;
                     d.y = y;
-                    editor.log('node (g) drag end...', d, x, y);
                 };
-                inst4drag = ViewUtil.inst4drag = d3.drag()
+                inst4drag = editor.___inst4drag = d3.drag()
                     .on('start', start)
                     .on('drag', drag)
                     .on('end', end);
             }
             return inst4drag;
         };
+    }
+    static isOverstepBoundary(editor, node){
+        // TODO - 判断节点是否越过边界
+
+
+    }
+    static updateAllLinePath(editor){
+        // 更新全部连线位置信息
+        editor.getRelations().forEach((val, key)=>{
+            let line = val.line;
+            let from = val.from;
+            let to = val.to;
+            line.attr('d', ViewUtil._generateLinePath(
+                ViewUtil._genPos4FromNode(from),
+                ViewUtil._genPos4ToNode(to),
+            ));
+        });
+    }
+    static _genPos4FromNode(fromNode){
+        // 获取起始节点的位置信息和几何信息
+        let data = fromNode.datum();
+        let rect = fromNode.select(`.${Constant.SVG_NODE_RECT}`);
+        return {
+            x: data.x,
+            y: data.y,
+            w: parseInt(rect.attr('width')),
+            h: parseInt(rect.attr('height')),
+        };
+    }
+    static _genPos4ToNode(toNode){
+        // 获取终端节点的位置信息和几何信息
+        let data = toNode.datum();
+        let rect = toNode.select(`.${Constant.SVG_NODE_RECT}`);
+        let w = parseInt(rect.attr('width'));
+        let h = parseInt(rect.attr('height'));
+        return {
+            x: data.x,
+            y: data.y + h/2,
+            ox: data.x,
+            oy: data.y,
+            w,
+            h
+        };
+    }
+    static _bindEventOnNodePort(editor, node4svg){
+        let mouseleave = function () {
+            d3.select(this).classed('hovered', false);
+        };
+        let mouseenter = function () {
+            d3.select(this).classed('hovered', true);
+        };
+        let mousedown = function () {
+            let rect = node4svg.select('.node-rect');
+            let svg = editor.getSVG();
+            let group4line = svg.select(`.${Constant.SVG_DT_LINE_GROUP}`);
+            let fromNodePos = ViewUtil._genPos4FromNode(node4svg);
+            let pathData = ViewUtil._generateLinePath(
+                fromNodePos,
+                {x:fromNodePos.x+fromNodePos.w, y:fromNodePos.y+fromNodePos.h/2},
+            );
+            let gLine = group4line.append('svg:g')
+                .attr('id', ViewUtil.uuid())
+                .classed('dt-line', true);
+            let line = gLine.append('svg:path')
+                .classed('path-line', true)
+                .attr('d', pathData);
+            svg.on('mouseup.port', mouseup4line(gLine, line, svg, node4svg));
+            svg.on('mousemove.port', function(){
+                // TODO - 给节点outputs端口添加mousedown事件（用于绘制连线）
+                let mousePos = d3.mouse(this);
+                let pathData = ViewUtil._generateLinePath(
+                    ViewUtil._genPos4FromNode(node4svg),
+                    {x:mousePos[0], y:mousePos[1]});
+                line.attr('d', pathData);
+                d3.event.stopPropagation();
+                d3.event.preventDefault();
+            });
+            d3.event.stopPropagation();
+        };
+        let mouseup4line = function (gLine, line, svg, fromNode) {
+            return function(){
+                let target = d3.select(d3.event.target);
+                let toNode = null;
+                // 判断终端节点是否合法
+                if(target.classed(Constant.SVG_NODE_PORT) || target.classed(Constant.SVG_NODE_STATUS)){
+                    toNode = d3.select(target.node().parentNode.parentNode);
+                }else if(target.classed(Constant.SVG_NODE_RECT)){
+                    toNode = d3.select(target.node().parentNode);
+                }
+                let fromId = node4svg.attr('id');
+                let toId = toNode.attr('id');
+                if(!toNode
+                    || toId === fromId
+                    || !toNode.datum().inputs.enable
+                    || ViewUtil.hasRelation(editor, fromNode, toNode)){
+                    // 若终端节点不合法则移除
+                    gLine.remove();
+                    // 移除监听器
+                    svg.on('.port', null);
+                    d3.event.stopPropagation();
+                    return;
+                }
+                // 节点合法
+                // 调整line终点位置
+                let pathData = ViewUtil._generateLinePath(
+                    ViewUtil._genPos4FromNode(fromNode),
+                    ViewUtil._genPos4ToNode(toNode)
+                );
+                line.attr('d', pathData);
+                // 存储line
+                editor._setRelation(fromNode, toNode, line, gLine.attr('id'));
+                // 移除监听器
+                svg.on('.port', null);
+                d3.event.stopPropagation();
+            };
+        };
+
+        node4svg.selectAll('.node-port')
+            .on('mousedown', mousedown)
+            .on('mouseenter', mouseenter)
+            .on('mouseleave', mouseleave);
+    }
+    static hasRelation(editor, from, to, reverse=false){
+        // 判断两个节点直接是否已存在连线
+        let fromId = from.attr('id');
+        let toId = to.attr('id');
+        let relation = null;
+        editor.getRelations()
+            .forEach(function(val, key){
+                let fromNode = val.from;
+                let fromNodeId = fromNode.attr('id');
+                let toNode = val.to;
+                let toNodeId = toNode.attr('id');
+                if(fromId === fromNodeId && toId === toNodeId){
+                    relation = val;
+                }else if(reverse && fromId === toNodeId && toId === fromNodeId){
+                    relation = val;
+                }
+            });
+        return relation;
     }
     static _drawNodeOnCanvas(config, editor){
         // 添加节点到画布
@@ -286,56 +426,7 @@ class ViewUtil {
         // 给节点绑定拖拽事件
         node4svg.call(ViewUtil._dragNodeOnCanvas(editor)());
         // 给节点.port > .node-port绑定mouseenter事件
-        node4svg.selectAll('.node-port')
-            .on('mousedown', function () {
-                let rect = node4svg.select('.node-rect');
-                let nodeData = node4svg.datum();
-                let svg = editor.getSVG();
-                let group4line = svg.select(`.${Constant.SVG_DT_LINE_GROUP}`);
-                let pathData = ViewUtil._generateLinePath(
-                    {x:nodeData.x, y:nodeData.y, w:parseInt(rect.attr('width')),h:parseInt(rect.attr('height'))},
-                    {x:nodeData.x+parseInt(rect.attr('width')), y:nodeData.y+parseInt(rect.attr('height'))});
-                let gLine = group4line.append('svg:g')
-                    .classed('dt-line', true);
-                let line = gLine.append('svg:path')
-                    .classed('path-line', true)
-                    .attr('d', pathData);
-
-                svg.on('mouseup.port', function () {
-                    let target = d3.select(d3.event.target);
-                    let target4node = null;
-                    // 判断终端节点是否合法
-                    if(target.classed(Constant.SVG_NODE_PORT) || target.classed(Constant.SVG_NODE_STATUS)){
-                        target4node = d3.select(target.node().parentNode.parentNode);
-                    }else if(target.classed(Constant.SVG_NODE_RECT)){
-                        target4node = d3.select(target.node().parentNode);
-                    }
-                    if(!target4node || target4node.attr('id') === node4svg.attr('id')){
-                        // 若终端节点不合法则移除
-                        gLine.remove();
-                    }
-                    // 移除监听器
-                    svg.on('.port', null);
-                    d3.event.stopPropagation();
-                });
-                svg.on('mousemove.port', function(){
-                    // TODO - 给节点outputs端口添加mousedown事件（用于绘制连线）
-                    let mousePos = d3.mouse(this);
-                    let pathData = ViewUtil._generateLinePath(
-                        {x:nodeData.x, y:nodeData.y, w:parseInt(rect.attr('width')),h:parseInt(rect.attr('height'))},
-                        {x:mousePos[0], y:mousePos[1]});
-                    line.attr('d', pathData);
-                    d3.event.stopPropagation();
-                    d3.event.preventDefault();
-                });
-                d3.event.stopPropagation();
-            })
-            .on('mouseenter', function () {
-                d3.select(this).classed('hovered', true);
-            })
-            .on('mouseleave', function () {
-                d3.select(this).classed('hovered', false);
-            });
+        ViewUtil._bindEventOnNodePort(editor, node4svg);
         return node4svg;
     }
     static _drawSVGCanvas(settings){
