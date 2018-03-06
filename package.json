@@ -7,6 +7,8 @@
     "dev": "cross-env NODE_ENV=development node_modules/.bin/webpack-dev-server --config config/webpack.config.js",
     "build": "cross-env NODE_ENV=production node_modules/.bin/webpack --config config/webpack.prod.js",
     "eslint": "./node_modules/.bin/eslint src/**/*.js --fix",
+      "changelog":"auto-changelog -p",
+      "version":"npm run changelog",
     "commitmsg": "validate-commit-msg"
   },
   "repository": {
@@ -24,6 +26,7 @@
   },
   "homepage": "https://github.com/hong-boy/node-chart-flow#readme",
   "devDependencies": {
+    "auto-changelog": "^1.4.5",
     "babel-helper-vue-jsx-merge-props": "^2.0.2",
     "babel-loader": "^7.1.2",
     "babel-plugin-syntax-jsx": "^6.18.0",
@@ -34,7 +37,6 @@
     "babel-preset-es2015": "^6.24.1",
     "cross-env": "^5.1.1",
     "css-loader": "^0.28.7",
-    "cz-conventional-changelog": "^2.1.0",
     "eslint": "^4.13.1",
     "eslint-config-standard": "^11.0.0-beta.0",
     "eslint-plugin-import": "^2.8.0",
@@ -66,9 +68,10 @@
     "lodash.merge": "^4.6.1",
     "uuid": "^3.2.1"
   },
-  "config": {
-    "commitizen": {
-      "path": "./node_modules/cz-conventional-changelog"
+    "auto-changelog": {
+        "output": "CHANGELOG.md",
+        "template": "keepachangelog",
+        "unreleased": true,
+        "commitLimit": false
     }
-  }
 }
