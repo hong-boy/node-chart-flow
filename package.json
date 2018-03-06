@@ -1,14 +1,14 @@
 {
   "name": "node-chart-flow",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A simple visual flow editor",
   "main": "index.js",
   "scripts": {
     "dev": "cross-env NODE_ENV=development node_modules/.bin/webpack-dev-server --config config/webpack.config.js",
     "build": "cross-env NODE_ENV=production node_modules/.bin/webpack --config config/webpack.prod.js",
     "eslint": "./node_modules/.bin/eslint src/**/*.js --fix",
-      "changelog":"auto-changelog -p",
-      "version":"npm run changelog",
+    "changelog": "auto-changelog -p",
+    "version": "npm run changelog",
     "commitmsg": "validate-commit-msg"
   },
   "repository": {
@@ -68,10 +68,10 @@
     "lodash.merge": "^4.6.1",
     "uuid": "^3.2.1"
   },
-    "auto-changelog": {
-        "output": "CHANGELOG.md",
-        "template": "keepachangelog",
-        "unreleased": true,
-        "commitLimit": false
-    }
+  "auto-changelog": {
+    "output": "CHANGELOG.md",
+    "template": "keepachangelog",
+    "unreleased": true,
+    "commitLimit": false
+  }
 }
