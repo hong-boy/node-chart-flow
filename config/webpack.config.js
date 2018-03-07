@@ -15,14 +15,14 @@ module.exports = {
         rules: [
             {test: /\.vue$/, use: ['vue-loader']},
             {test: /\.js$/, use: ['babel-loader'], exclude: /node_modules/},
-            {test: /\.(css|less)$/, use: [
+            {test: /\.(css|less|pcss)$/, use: [
                 {
                     loader: 'style-loader',
                 },
                 {
                     loader: 'css-loader',
                     options: {
-                        importLoaders: 1,
+                        importLoaders: 2,
                     }
                 },
                 {

@@ -66,4 +66,5 @@
     }
 </script>
 
-<style lang="less" src="./css/editor.less"></style>
+<style lang="pcss" src="./css/palette.pcss"></style>
+<style lang="pcss" src="./css/editor2.pcss"></style>
