@@ -5,6 +5,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const rootdir = path.join(__dirname, '../');
 
 module.exports = {
+    mode: 'development',
     devtool: 'eval', // 方便源码调试
     entry: {
         // main: ['babel-polyfill', path.join(rootdir, 'src/main.js')]
@@ -14,7 +15,23 @@ module.exports = {
         rules: [
             {test: /\.vue$/, use: ['vue-loader']},
             {test: /\.js$/, use: ['babel-loader'], exclude: /node_modules/},
-            {test: /\.(css|less)$/, use: ['style-loader', 'css-loader', 'less-loader']},
+            {test: /\.(css|less)$/, use: [
+                {
+                    loader: 'style-loader',
+                },
+                {
+                    loader: 'css-loader',
+                    options: {
+                        importLoaders: 1,
+                    }
+                },
+                {
+                    loader: 'less-loader'
+                },
+                {
+                    loader: 'postcss-loader'
+                },
+            ]},
             {test: /\.(jpg|png)$/, use: ['file-loader']}
         ]
     },
