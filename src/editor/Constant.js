@@ -19,10 +19,10 @@ export default {
     SVG_MIN_WIDTH_OF_NODE_RECT: 120, // .node-rect最新宽度
     SVG_SELECTOR_NODE_STATUS_CHANGED: '.node-status.changed',
     SVG_SELECTOR_NODE_STATUS_ERROR: '.node-status.error',
-    DEFAULT_CATAGORY: {id:'defaults', label:'Defaults'}, // 默认节点类别
+    DEFAULT_CATAGORY: { id: 'defaults', label: 'Defaults', }, // 默认节点类别
     DEFAULT_NODE_BG_COLOR: '#DEB887',
     DEFAULT_NODE_STATUS_CHANGED_COLOR: '#00bcff',
     DEFAULT_NODE_STATUS_ERROR_COLOR: '#ff6600',
     SVG_LINE_FACTOR_NODE_WIDTH: 100,
     SVG_LINE_FACTOR_NODE_HEIGHT: 30,
-}
+};

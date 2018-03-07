@@ -6,7 +6,7 @@
     "env":{
         "browser":true,
         "es6":true,
-        "amd":true
+        "node": true
     },
     "globals":{
         "Vue":true
@@ -100,7 +100,7 @@
         "no-redeclare":"error",
         "no-self-assign":"error",
         "no-self-compare":"error",
-        "no-throw-literal":false,
+        "no-throw-literal":0,
         "no-unused-expressions":"warn",
         "no-unused-labels":"error",
         "no-useless-call":"warn",
@@ -136,7 +136,7 @@
             }
         ],
         "no-unused-vars":[
-            "error",
+            "warn",
             {
                 "vars":"local",
                 "args":"none"

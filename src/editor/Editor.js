@@ -1,8 +1,8 @@
 'use strict';
-import $ from 'jquery'
-import NodeType from './NodeType.js'
-import util from './ViewUtil.js'
-import Constant from './Constant.js'
+import $ from 'jquery';
+import NodeType from './NodeType.js';
+import util from './ViewUtil.js';
+import Constant from './Constant.js';
 
 /**
  * 默认编辑器配置
@@ -17,8 +17,8 @@ const DEFAULT_CONFIG = {
         grid: {
             enable: true,
             gap: 20,
-            strokeColor: '#eee'
-        }
+            strokeColor: '#eee',
+        },
     },
 };
 
@@ -42,7 +42,7 @@ class Editor {
      * @param el 依附的容器节点
      * @param config 编辑器的配置
      */
-    constructor(el, config){
+    constructor(el, config) {
         this._debug = true; // 用于打印关键信息方便调试
         this.config = $.extend(true, {}, DEFAULT_CONFIG, config);
         this.$el = $(el);
@@ -57,11 +57,12 @@ class Editor {
             Relations: new Map(), // 节点连线
         };
     }
-    init(){
+
+    init() {
         let thiz = this;
         let config = thiz.config;
         // 注册节点类型
-        if(!thiz.getNodeTypes().size){
+        if (!thiz.getNodeTypes().size) {
             throw Error('请先注册节点类型：registerNodeType()');
         }
         // 绘制dt-palette
@@ -70,83 +71,102 @@ class Editor {
         util.renderWorkspace(thiz);
 
     }
-    update(){
+
+    update() {
 
     }
-    destroy(){
+
+    destroy() {
 
     }
-    exportData(){
+
+    exportData() {
 
     }
-    importData(){
+
+    importData() {
 
     }
-    fullScreen(){
+
+    fullScreen() {
 
     }
-    restoreScreen(){
+
+    restoreScreen() {
 
     }
-    showPropDialog(){
+
+    showPropDialog() {
 
     }
-    hidePropDialog(){
+
+    hidePropDialog() {
 
     }
-    zoom(){
+
+    zoom() {
 
     }
-    registerCatagory(cata){
+
+    registerCatagory(cata) {
         // 注册节点类别
         let catagory = this.getNodeCatagory();
         catagory.add({
             id: cata.id,
-            label: cata.label||cata.id
+            label: cata.label || cata.id,
         });
     }
-    registerNodeType(func){
+
+    registerNodeType(func) {
         // 注册节点类型模板
         let RealNodeType = func.call(null, NodeType);
         this.___def.NodeTypes.set(RealNodeType.id(), RealNodeType);
     }
-    getNodeCatagory(){
+
+    getNodeCatagory() {
         // 返回注册的节点类别
         let set = this.___def.NodeCatagory;
-        if(!set.size){
+        if (!set.size) {
             // 若catagory为空，则默认添加一个类别
             set.add(Constant.DEFAULT_CATAGORY);
         }
         return set;
     }
-    getNodeTypes(){
+
+    getNodeTypes() {
         // 返回已注册的节点类型
         return this.___def.NodeTypes;
     }
-    log(...msg){
-        if(this._debug){
+
+    log(...msg) {
+        if (this._debug) {
             console.log(msg);
         }
     }
-    _setSVG(svg){
+
+    _setSVG(svg) {
         this.___svg = svg;
     }
-    getSVG(){
+
+    getSVG() {
         return this.___svg;
     }
-    _setRelation(from, to, line, id){
+
+    _setRelation(from, to, line, id) {
         this.___def.Relations.set(id, {
-            id: id,
-            from: from,
-            to: to,
-            line: line,
+            id,
+            from,
+            to,
+            line,
         });
         return id;
     }
-    _removeRelation(id){
+
+    _removeRelation(id) {
         this.___def.Relations.delete(id);
     }
-    getRelations(){
+
+    getRelations() {
         return this.___def.Relations;
     }
 }

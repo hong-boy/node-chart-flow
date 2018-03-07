@@ -1,37 +1,38 @@
 'use strict';
-import * as d3 from 'd3'
-import $ from 'jquery'
-import uuid from 'uuid/v4'
-import 'jquery-ui/ui/widgets/accordion.js'
-import 'jquery-ui/ui/widgets/draggable.js'
-import 'jquery-ui/ui/widgets/droppable.js'
-import 'jquery-ui/themes/base/accordion.css'
-import 'jquery-ui/themes/base/draggable.css'
-import Constant from './Constant.js'
+import * as d3 from 'd3';
+import $ from 'jquery';
+import uuid from 'uuid/v4';
+import 'jquery-ui/ui/widgets/accordion.js';
+import 'jquery-ui/ui/widgets/draggable.js';
+import 'jquery-ui/ui/widgets/droppable.js';
+import 'jquery-ui/themes/base/accordion.css';
+import 'jquery-ui/themes/base/draggable.css';
+import Constant from './Constant.js';
 
 class ViewUtil {
-    static uuid(){
+    static uuid() {
         return uuid();
     }
-    static getNodeTpl4SVG(nodeTypeConfig, editor){
+
+    static getNodeTpl4SVG(nodeTypeConfig, editor) {
         // .dt-canvas
-        /*<g class="dt-node" id="">
-            <rect class="node-rect"></rect>
-            <g class="node-icon-group">
-                <rect class="shape"></rect>
-                <image class="icon"></image>
-                <path class="shape-border"></path>
-            </g>
-            <text class="node-label"></text>
-            <g class="port inputs">
-                <rect class="node-port"></rect>
-            </g>
-            <g class="port outputs">
-                <rect class="node-port"></rect>
-            </g>
-             <rect class="node-status error"></rect>
-             <rect class="node-status changed"></rect>
-        </g>*/
+        /* <g class="dt-node" id="">
+         <rect class="node-rect"></rect>
+         <g class="node-icon-group">
+         <rect class="shape"></rect>
+         <image class="icon"></image>
+         <path class="shape-border"></path>
+         </g>
+         <text class="node-label"></text>
+         <g class="port inputs">
+         <rect class="node-port"></rect>
+         </g>
+         <g class="port outputs">
+         <rect class="node-port"></rect>
+         </g>
+         <rect class="node-status error"></rect>
+         <rect class="node-status changed"></rect>
+         </g> */
         let g = editor.getSVG().select(`.${Constant.SVG_DT_NODE_GROUP}`);
         let g4node = g.append('svg:g').attr('class', Constant.SVG_DT_NODE).attr('id', nodeTypeConfig.nodeId);
         // rect.node-rect
@@ -116,12 +117,16 @@ class ViewUtil {
 
         return g4node;
     }
-    static getNodeTpl4Palette(nodeTypeConfig, editor){
+
+    static getNodeTpl4Palette(nodeTypeConfig, editor) {
         // 获取节点html模板 - .dt-palette
         let $tpl = $(
             '<div class="node-tpl">' +
-            `<div class="node-label">${$.isFunction(nodeTypeConfig.label) ? nodeTypeConfig.label.call(null, editor) : nodeTypeConfig.label}</div>` + // 节点label
-            `<div class="node-icon-container"><span class="dt-icon" style="background-image:url(${nodeTypeConfig.icon||require('./css/icon/default.png')})"></span></div>` + // 节点icon
+            `<div class="node-label">${$.isFunction(nodeTypeConfig.label) ?
+                nodeTypeConfig.label.call(null, editor) : nodeTypeConfig.label}</div>` + // 节点label
+            `<div class="node-icon-container"><span class="dt-icon" 
+            style="background-image:url(${nodeTypeConfig.icon || require('./css/icon/default.png')})"></span></div>` +
+            // 节点icon
             (nodeTypeConfig.inputs.enable ? '<div class="node-port node-port-inputs"></div>' : '') + // 节点输入端口
             (nodeTypeConfig.outputs.enable ? '<div class="node-port node-port-outputs"></div>' : '') + // 节点输出端口
             '</div>'
@@ -131,26 +136,28 @@ class ViewUtil {
         console.log($tpl.html(), nodeTypeConfig);
         return $tpl;
     }
-    static renderCatagory(catagory, $palette){
+
+    static renderCatagory(catagory, $palette) {
         // 渲染节点类别列表
-        if(!catagory){
+        if (!catagory) {
             throw Error('节点类别为空：registerNodeCatagory');
         }
         let arr = [];
-        catagory.forEach(cata=>{
+        catagory.forEach((cata) => {
             arr.push(
                 `<header class="cata-label">${cata.label}</header>` +
-                `<section class="cata-section" id="${Constant.PREFIX_OF_CATAGORY+cata.id}"></section>`
+                `<section class="cata-section" id="${Constant.PREFIX_OF_CATAGORY + cata.id}"></section>`
             );
         });
         $palette.append(arr.join(''));
     }
-    static renderPalette(editor){
+
+    static renderPalette(editor) {
         let $palette = editor.$palette;
         // 先渲染节点类别
         ViewUtil.renderCatagory(editor.getNodeCatagory(), $palette);
         // 再渲染节点类型
-        editor.getNodeTypes().forEach((RealNodeType)=>{
+        editor.getNodeTypes().forEach((RealNodeType) => {
             let nodeTypeConfig = new RealNodeType();
             let $nodePaletteTpl = ViewUtil.getNodeTpl4Palette(nodeTypeConfig, editor);
             let $nodeWrapper = $palette.find(`#${Constant.PREFIX_OF_CATAGORY + nodeTypeConfig.catagory}`);
@@ -158,22 +165,24 @@ class ViewUtil {
         });
         // 渲染手风琴
         $palette.accordion({
-            header:'.cata-label',
+            header: '.cata-label',
             collapsible: false,
         });
         // 绑定拖拽事件
         ViewUtil.dragAndDrop4Palette(editor);
     }
-    static transform(node4svg, x, y){
+
+    static transform(node4svg, x, y) {
         node4svg.attr('transform', `translate(${parseInt(x)}, ${parseInt(y)})`);
     }
-    static dragAndDrop4Palette(editor){
+
+    static dragAndDrop4Palette(editor) {
         // 绑定拖拽事件 - dt-palette
         let start = function (e, ui) {
             let nodeTypeConfig = $(e.target).data(Constant.PALETTE_NODE_CONFIG);
             ui.helper.data(Constant.PALETTE_NODE_CONFIG, nodeTypeConfig.nodeTypeId);
         };
-        let drop = function(e, ui){
+        let drop = function (e, ui) {
             let factor = 11; // y轴总是有11px的误差 (待观察)- TODO
             let offset = ui.offset;
             let offset4thiz = $(this).offset();
@@ -202,17 +211,19 @@ class ViewUtil {
             drop,
         });
     }
-    static _calcTextWidth(labelTxt){
+
+    static _calcTextWidth(labelTxt) {
         // 计算节点label宽度
         let $span = $('<span>').css({
             position: 'absolute',
-            top: '-9999px'
+            top: '-9999px',
         }).text(labelTxt);
         let width = $span.appendTo('body').width();
         $span.remove();
         return parseInt(width);
     }
-    static _updateNodeSize(node4svg, editor){
+
+    static _updateNodeSize(node4svg, editor) {
         // 更新节点尺寸
         let labelTxt = node4svg.select('.node-label').text();
         let width = ViewUtil._calcTextWidth(labelTxt);
@@ -225,32 +236,34 @@ class ViewUtil {
         // 设置port.inputs位置
         ViewUtil.transform(node4svg.select('.port.inputs'), -5, 10);
         // 设置port.outputs位置
-        ViewUtil.transform(node4svg.select('.port.outputs'), width4rect-5, 10);
+        ViewUtil.transform(node4svg.select('.port.outputs'), width4rect - 5, 10);
         editor.log('updateNodeSize', width, width4rect);
     }
-    static _generateLinePath(from, to){
+
+    static _generateLinePath(from, to) {
         // 生成连线路径
         let NODE_WIDTH = Constant.SVG_LINE_FACTOR_NODE_WIDTH;
         let NODE_HEIGHT = Constant.SVG_LINE_FACTOR_NODE_HEIGHT;
         let pathArr = [
-            `M ${from.x + from.w} ${from.y + from.h/2} `,
-            `C ${from.x + from.w + NODE_WIDTH} ${from.y + from.h/2 + NODE_HEIGHT} `,
+            `M ${from.x + from.w} ${from.y + from.h / 2} `,
+            `C ${from.x + from.w + NODE_WIDTH} ${from.y + from.h / 2 + NODE_HEIGHT} `,
             `${to.x - NODE_WIDTH} ${to.y - NODE_HEIGHT} `,
             `${to.x} ${to.y} `,
         ];
         return pathArr.join('');
     }
-    static _dragNodeOnCanvas(editor){
+
+    static _dragNodeOnCanvas(editor) {
         // 在画布中定义节点的拖拽行为
         let inst4drag = editor.___inst4drag;
         // let inst4drag;
         return function () {
-            if(!inst4drag){
-                let start = function (d){
+            if (!inst4drag) {
+                let start = function (d) {
                     d3.event.x = d.x;
                     d3.event.y = d.y;
                 };
-                let drag = function (d){
+                let drag = function (d) {
                     let x = d3.event.x;
                     let y = d3.event.y;
                     d.x = x;
@@ -263,7 +276,7 @@ class ViewUtil {
                     // 更新连线位置
                     ViewUtil.updateAllLinePath(editor);
                 };
-                let end = function (d){
+                let end = function (d) {
                     let x = d3.event.x;
                     let y = d3.event.y;
                     d.x = x;
@@ -277,24 +290,27 @@ class ViewUtil {
             return inst4drag;
         };
     }
-    static isOverstepBoundary(editor, node){
+
+    static isOverstepBoundary(editor, node) {
         // TODO - 判断节点是否越过边界
 
 
     }
-    static updateAllLinePath(editor){
+
+    static updateAllLinePath(editor) {
         // 更新全部连线位置信息
-        editor.getRelations().forEach((val, key)=>{
+        editor.getRelations().forEach((val, key) => {
             let line = val.line;
             let from = val.from;
             let to = val.to;
             line.attr('d', ViewUtil._generateLinePath(
                 ViewUtil._genPos4FromNode(from),
-                ViewUtil._genPos4ToNode(to),
+                ViewUtil._genPos4ToNode(to)
             ));
         });
     }
-    static _genPos4FromNode(fromNode){
+
+    static _genPos4FromNode(fromNode) {
         // 获取起始节点的位置信息和几何信息
         let data = fromNode.datum();
         let rect = fromNode.select(`.${Constant.SVG_NODE_RECT}`);
@@ -305,7 +321,8 @@ class ViewUtil {
             h: parseInt(rect.attr('height')),
         };
     }
-    static _genPos4ToNode(toNode){
+
+    static _genPos4ToNode(toNode) {
         // 获取终端节点的位置信息和几何信息
         let data = toNode.datum();
         let rect = toNode.select(`.${Constant.SVG_NODE_RECT}`);
@@ -313,14 +330,15 @@ class ViewUtil {
         let h = parseInt(rect.attr('height'));
         return {
             x: data.x,
-            y: data.y + h/2,
+            y: data.y + h / 2,
             ox: data.x,
             oy: data.y,
             w,
-            h
+            h,
         };
     }
-    static _bindEventOnNodePort(editor, node4svg){
+
+    static _bindEventOnNodePort(editor, node4svg) {
         let mouseleave = function () {
             d3.select(this).classed('hovered', false);
         };
@@ -334,7 +352,7 @@ class ViewUtil {
             let fromNodePos = ViewUtil._genPos4FromNode(node4svg);
             let pathData = ViewUtil._generateLinePath(
                 fromNodePos,
-                {x:fromNodePos.x+fromNodePos.w, y:fromNodePos.y+fromNodePos.h/2},
+                { x: fromNodePos.x + fromNodePos.w, y: fromNodePos.y + fromNodePos.h / 2, }
             );
             let gLine = group4line.append('svg:g')
                 .attr('id', ViewUtil.uuid())
@@ -343,12 +361,12 @@ class ViewUtil {
                 .classed('path-line', true)
                 .attr('d', pathData);
             svg.on('mouseup.port', mouseup4line(gLine, line, svg, node4svg));
-            svg.on('mousemove.port', function(){
+            svg.on('mousemove.port', function () {
                 // TODO - 给节点outputs端口添加mousedown事件（用于绘制连线）
                 let mousePos = d3.mouse(this);
                 let pathData = ViewUtil._generateLinePath(
                     ViewUtil._genPos4FromNode(node4svg),
-                    {x:mousePos[0], y:mousePos[1]});
+                    { x: mousePos[0], y: mousePos[1], });
                 line.attr('d', pathData);
                 d3.event.stopPropagation();
                 d3.event.preventDefault();
@@ -356,21 +374,21 @@ class ViewUtil {
             d3.event.stopPropagation();
         };
         let mouseup4line = function (gLine, line, svg, fromNode) {
-            return function(){
+            return function () {
                 let target = d3.select(d3.event.target);
                 let toNode = null;
                 // 判断终端节点是否合法
-                if(target.classed(Constant.SVG_NODE_PORT) || target.classed(Constant.SVG_NODE_STATUS)){
+                if (target.classed(Constant.SVG_NODE_PORT) || target.classed(Constant.SVG_NODE_STATUS)) {
                     toNode = d3.select(target.node().parentNode.parentNode);
-                }else if(target.classed(Constant.SVG_NODE_RECT)){
+                } else if (target.classed(Constant.SVG_NODE_RECT)) {
                     toNode = d3.select(target.node().parentNode);
                 }
                 let fromId = node4svg.attr('id');
                 let toId = toNode.attr('id');
-                if(!toNode
-                    || toId === fromId
-                    || !toNode.datum().inputs.enable
-                    || ViewUtil.hasRelation(editor, fromNode, toNode)){
+                if (!toNode ||
+                    toId === fromId ||
+                    !toNode.datum().inputs.enable ||
+                    ViewUtil.hasRelation(editor, fromNode, toNode)) {
                     // 若终端节点不合法则移除
                     gLine.remove();
                     // 移除监听器
@@ -398,26 +416,28 @@ class ViewUtil {
             .on('mouseenter', mouseenter)
             .on('mouseleave', mouseleave);
     }
-    static hasRelation(editor, from, to, reverse=false){
+
+    static hasRelation(editor, from, to, reverse = false) {
         // 判断两个节点直接是否已存在连线
         let fromId = from.attr('id');
         let toId = to.attr('id');
         let relation = null;
         editor.getRelations()
-            .forEach(function(val, key){
+            .forEach(function (val, key) {
                 let fromNode = val.from;
                 let fromNodeId = fromNode.attr('id');
                 let toNode = val.to;
                 let toNodeId = toNode.attr('id');
-                if(fromId === fromNodeId && toId === toNodeId){
+                if (fromId === fromNodeId && toId === toNodeId) {
                     relation = val;
-                }else if(reverse && fromId === toNodeId && toId === fromNodeId){
+                } else if (reverse && fromId === toNodeId && toId === fromNodeId) {
                     relation = val;
                 }
             });
         return relation;
     }
-    static _drawNodeOnCanvas(config, editor){
+
+    static _drawNodeOnCanvas(config, editor) {
         // 添加节点到画布
         let node4svg = ViewUtil.getNodeTpl4SVG(config, editor);
         node4svg.datum(config);
@@ -429,20 +449,22 @@ class ViewUtil {
         ViewUtil._bindEventOnNodePort(editor, node4svg);
         return node4svg;
     }
-    static _drawSVGCanvas(settings){
+
+    static _drawSVGCanvas(settings) {
         // 绘制svg节点
         return d3.select(`#${Constant.CANVAS_ID}`)
             .append('svg:svg')
             .attr('height', settings.size)
             .attr('width', settings.size)
-            .attr("pointer-events", "all")
-            .style("cursor","crosshair")
-            .on("contextmenu", function(){
+            .attr('pointer-events', 'all')
+            .style('cursor', 'crosshair')
+            .on('contextmenu', function () {
                 // 屏蔽默认右键菜单事件
                 d3.event.preventDefault();
             });
     }
-    static _drawRectAsBackground(g, settings){
+
+    static _drawRectAsBackground(g, settings) {
         // 绘制rect节点作为背景画布
         g.append('svg:rect')
             .attr('class', 'dt-c-bg')
@@ -450,10 +472,11 @@ class ViewUtil {
             .attr('height', settings.size)
             .attr('fill', Constant.SVG_BG_COLOR);
     }
-    static _drawGrid(grid, settings){
+
+    static _drawGrid(grid, settings) {
         // 绘制网格
         let temp = [];
-        for(var i=0; i<settings.size; i+=settings.grid.gap){
+        for (var i = 0; i < settings.size; i += settings.grid.gap) {
             temp.push(i);
         }
         // horizonal
@@ -465,8 +488,12 @@ class ViewUtil {
             .attr('class', 'horizonal')
             .attr('x1', 0)
             .attr('x2', settings.size)
-            .attr('y1', function(d){ return d;})
-            .attr('y2', function(d){ return d;})
+            .attr('y1', function (d) {
+                return d;
+            })
+            .attr('y2', function (d) {
+                return d;
+            })
             .attr('fill', 'none')
             .attr('stroke', settings.grid.strokeColor)
             .attr('stroke-width', '1px')
@@ -480,49 +507,54 @@ class ViewUtil {
             .attr('class', 'vertical')
             .attr('y1', 0)
             .attr('y2', settings.size)
-            .attr('x1', function(d){ return d;})
-            .attr('x2', function(d){ return d;})
+            .attr('x1', function (d) {
+                return d;
+            })
+            .attr('x2', function (d) {
+                return d;
+            })
             .attr('fill', 'none')
             .attr('stroke', settings.grid.strokeColor)
             .attr('stroke-width', '1px')
             .attr('shape-rendering', 'crispEdges');
-        grid.style('visibility', settings.grid.enable ? 'visible':'hidden');
+        grid.style('visibility', settings.grid.enable ? 'visible' : 'hidden');
     }
-    static renderWorkspace(editor){
+
+    static renderWorkspace(editor) {
         // 渲染dt-canvas
         let config = editor.config;
         let settings = config.settings;
-        /*<svg>
-            <g class="inner-canvas">
-                <rect class="dt-c-bg"></rect>
-                <g class="dt-c-grid">
-                    <line class="horizonal"></line>
-                    <line class="vertical"></line>
-                </g>
-                <g class="dt-link-group"></g>
-                <g class="dt-node-group">
-                 <g class="dt-node">
-                 <rect class="node-rect"></rect>
-                 <g class="node-icon-group">
-                 <rect class="shape"></rect>
-                 <span class="icon"></span>
-                 <path class="shape-border"></path>
-                 </g>
-                 <text class="node-label"></text>
-                 <g class="node-status-group">
-                 <span class="status error"></span>
-                 <span class="status changed"></span>
-                 </g>
-                 <g class="port inputs">
-                 <rect class="node-port"></rect>
-                 </g>
-                 <g class="port outputs">
-                 <rect class="node-port"></rect>
-                 </g>
-                 </g>
-                </g>
-                </g>
-        </svg>*/
+        /* <svg>
+         <g class="inner-canvas">
+         <rect class="dt-c-bg"></rect>
+         <g class="dt-c-grid">
+         <line class="horizonal"></line>
+         <line class="vertical"></line>
+         </g>
+         <g class="dt-link-group"></g>
+         <g class="dt-node-group">
+         <g class="dt-node">
+         <rect class="node-rect"></rect>
+         <g class="node-icon-group">
+         <rect class="shape"></rect>
+         <span class="icon"></span>
+         <path class="shape-border"></path>
+         </g>
+         <text class="node-label"></text>
+         <g class="node-status-group">
+         <span class="status error"></span>
+         <span class="status changed"></span>
+         </g>
+         <g class="port inputs">
+         <rect class="node-port"></rect>
+         </g>
+         <g class="port outputs">
+         <rect class="node-port"></rect>
+         </g>
+         </g>
+         </g>
+         </g>
+         </svg> */
         // 绘制svg
         let svg = ViewUtil._drawSVGCanvas(settings);
         editor._setSVG(svg);
