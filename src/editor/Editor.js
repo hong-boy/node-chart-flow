@@ -31,10 +31,6 @@ const PROP_DIALOG_EVENTS = {
     ON_RESIZE: 'on-resize', // 属性对话框尺寸调整
 };
 
-// 编辑器快捷键
-const SHORTCUTS = {
-
-};
 
 class Editor {
     /**

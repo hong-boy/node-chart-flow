@@ -16,7 +16,8 @@ export default {
     SVG_NODE_PORT: 'node-port',
     SVG_NODE_PORT_INPUT: 'node-port-input',
     SVG_WIDTH_OF_NODE_ICON: 15, // .node-icon宽度
-    SVG_MIN_WIDTH_OF_NODE_RECT: 120, // .node-rect最新宽度
+    SVG_MIN_WIDTH_OF_NODE_RECT: 120, // .node-rect最小宽度
+    SVG_MAX_WIDTH_OF_NODE_RECT: 320, // .node-rect最大宽度
     SVG_SELECTOR_NODE_STATUS_CHANGED: '.node-status.changed',
     SVG_SELECTOR_NODE_STATUS_ERROR: '.node-status.error',
     DEFAULT_CATAGORY: { id: 'defaults', label: 'Defaults', }, // 默认节点类别

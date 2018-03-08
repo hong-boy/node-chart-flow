@@ -26,11 +26,11 @@ module.exports = {
                     }
                 },
                 {
-                    loader: 'less-loader'
-                },
-                {
                     loader: 'postcss-loader'
                 },
+                {
+                    loader: 'less-loader'
+                }
             ]},
             {test: /\.(jpg|png)$/, use: ['file-loader']}
         ]

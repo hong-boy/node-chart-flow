@@ -19,7 +19,7 @@
     </style>
 </head>
 <body>
-<div class="canvas"></div>
+<div class="canvas" tabindex="-1"></div>
 <custom:div>
     <span>I am a custom-div...</span>
 </custom:div>
@@ -41,7 +41,10 @@
     var rect4bg = g4visible.append('svg:rect')
         .attr('width', 5000)
         .attr('height', 5000)
-        .attr('fill', '#fff');
+        .attr('fill', '#fff')
+        .on('mouseup', function(){
+            console.log('dbclick');
+        });
 
     var g4grid = g4visible.append('svg:g');
 

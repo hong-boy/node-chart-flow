@@ -1,0 +1,19 @@
+@import "mixin";
+
+.dt-editor {
+    position: relative;
+    box-sizing: border-box;
+    height: 100%;
+    width: 100%;
+    font-size: @baseFontSize;
+    font-family: system-ui;
+    color: @baseFontColor;
+    .flexlayout(flex, row, start, flex-start);
+    .hide {
+        display: none !important;
+    }
+    @import "palette";
+    @import "workspace";
+    @import "panel_helper";
+    @import "override_accordion";
+}

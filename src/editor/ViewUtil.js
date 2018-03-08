@@ -11,6 +11,7 @@ import Constant from './Constant.js';
 
 class ViewUtil {
     static uuid() {
+        // 生成uuid
         return uuid();
     }
 
@@ -38,6 +39,7 @@ class ViewUtil {
         // rect.node-rect
         g4node.append('svg:rect')
             .attr('class', 'node-rect')
+            .attr('tabindex', -1)
             .attr('rx', 5)
             .attr('ry', 5)
             .attr('width', 140) // TODO - width=140
@@ -197,7 +199,6 @@ class ViewUtil {
             nodeTypeConfig.y = y;
             nodeTypeConfig.nodeId = nodeId;
             ViewUtil._drawNodeOnCanvas(nodeTypeConfig, editor);
-            editor.log('drop...', nodeTypeConfig);
         };
         $('.node-tpl', editor.$palette).draggable({
             helper: 'clone',
@@ -220,7 +221,7 @@ class ViewUtil {
         }).text(labelTxt);
         let width = $span.appendTo('body').width();
         $span.remove();
-        return parseInt(width);
+        return Math.min(parseInt(width), Constant.SVG_MAX_WIDTH_OF_NODE_RECT);
     }
 
     static _updateNodeSize(node4svg, editor) {
@@ -237,7 +238,6 @@ class ViewUtil {
         ViewUtil.transform(node4svg.select('.port.inputs'), -5, 10);
         // 设置port.outputs位置
         ViewUtil.transform(node4svg.select('.port.outputs'), width4rect - 5, 10);
-        editor.log('updateNodeSize', width, width4rect);
     }
 
     static _generateLinePath(from, to) {
@@ -259,29 +259,26 @@ class ViewUtil {
         // let inst4drag;
         return function () {
             if (!inst4drag) {
-                let start = function (d) {
-                    d3.event.x = d.x;
-                    d3.event.y = d.y;
-                };
+                let start = function (d) {};
                 let drag = function (d) {
                     let x = d3.event.x;
                     let y = d3.event.y;
+                    let ox = d.x;
+                    let oy = d.y;
                     d.x = x;
                     d.y = y;
                     let node = d3.select(this);
-                    // TODO - 判断节点是否越过边界
-                    ViewUtil.isOverstepBoundary(editor, node);
+                    // 判断节点是否越过边界
+                    if(ViewUtil.isOverstepBoundary(editor, node)){
+                        d.x = ox;
+                        d.y = oy;
+                    }
                     // 拖动节点
-                    ViewUtil.transform(node, d3.event.x, d3.event.y);
+                    ViewUtil.transform(node, d.x, d.y);
                     // 更新连线位置
                     ViewUtil.updateAllLinePath(editor);
                 };
-                let end = function (d) {
-                    let x = d3.event.x;
-                    let y = d3.event.y;
-                    d.x = x;
-                    d.y = y;
-                };
+                let end = function (d) {};
                 inst4drag = editor.___inst4drag = d3.drag()
                     .on('start', start)
                     .on('drag', drag)
@@ -291,10 +288,36 @@ class ViewUtil {
         };
     }
 
+    static _getNodeSize(node){
+        // 获取节点坐标和宽高
+        let datum = node.datum();
+        let rectNode = node.select(`.${Constant.SVG_NODE_RECT}`);
+        let rect = {
+            x: datum.x,
+            y: datum.y,
+            w: parseInt(rectNode.attr('width')),
+            h: parseInt(rectNode.attr('height'))
+        };
+        return rect;
+    }
+
     static isOverstepBoundary(editor, node) {
-        // TODO - 判断节点是否越过边界
-
-
+        // 判断节点是否越过画布边界
+        let canvas = {
+            x: 0,
+            y: 0,
+            w: editor.config.settings.size,
+            h: editor.config.settings.size
+        };
+        let rect = ViewUtil._getNodeSize(node);
+        let flag = false;
+        if(rect.x < canvas.x
+            || rect.y < canvas.y
+            || rect.x+rect.w > canvas.w
+            || rect.y+rect.h > canvas.h){
+            flag = true;
+        }
+        return flag;
     }
 
     static updateAllLinePath(editor) {
@@ -348,29 +371,19 @@ class ViewUtil {
         let mousedown = function () {
             let rect = node4svg.select('.node-rect');
             let svg = editor.getSVG();
-            let group4line = svg.select(`.${Constant.SVG_DT_LINE_GROUP}`);
-            let fromNodePos = ViewUtil._genPos4FromNode(node4svg);
-            let pathData = ViewUtil._generateLinePath(
-                fromNodePos,
-                { x: fromNodePos.x + fromNodePos.w, y: fromNodePos.y + fromNodePos.h / 2, }
-            );
-            let gLine = group4line.append('svg:g')
-                .attr('id', ViewUtil.uuid())
-                .classed('dt-line', true);
-            let line = gLine.append('svg:path')
-                .classed('path-line', true)
-                .attr('d', pathData);
-            svg.on('mouseup.port', mouseup4line(gLine, line, svg, node4svg));
-            svg.on('mousemove.port', function () {
-                // TODO - 给节点outputs端口添加mousedown事件（用于绘制连线）
+            let {fakeLine, g} = ViewUtil.drawFakeLine(node4svg, editor);
+            svg.on('mouseup.port', mouseup4line(g, fakeLine, svg, node4svg));
+            let mousemove = function () {
+                // 更新fakeLine
                 let mousePos = d3.mouse(this);
                 let pathData = ViewUtil._generateLinePath(
                     ViewUtil._genPos4FromNode(node4svg),
                     { x: mousePos[0], y: mousePos[1], });
-                line.attr('d', pathData);
+                fakeLine.attr('d', pathData);
                 d3.event.stopPropagation();
                 d3.event.preventDefault();
-            });
+            };
+            svg.on('mousemove.port', mousemove);
             d3.event.stopPropagation();
         };
         let mouseup4line = function (gLine, line, svg, fromNode) {
@@ -383,38 +396,109 @@ class ViewUtil {
                 } else if (target.classed(Constant.SVG_NODE_RECT)) {
                     toNode = d3.select(target.node().parentNode);
                 }
+                gLine.remove();
                 let fromId = node4svg.attr('id');
-                let toId = toNode.attr('id');
                 if (!toNode ||
-                    toId === fromId ||
+                    toNode.attr('id') === fromId ||
                     !toNode.datum().inputs.enable ||
                     ViewUtil.hasRelation(editor, fromNode, toNode)) {
-                    // 若终端节点不合法则移除
-                    gLine.remove();
                     // 移除监听器
                     svg.on('.port', null);
                     d3.event.stopPropagation();
                     return;
                 }
                 // 节点合法
-                // 调整line终点位置
-                let pathData = ViewUtil._generateLinePath(
-                    ViewUtil._genPos4FromNode(fromNode),
-                    ViewUtil._genPos4ToNode(toNode)
-                );
-                line.attr('d', pathData);
-                // 存储line
-                editor._setRelation(fromNode, toNode, line, gLine.attr('id'));
+                ViewUtil.drawLine(fromNode, toNode, editor);
                 // 移除监听器
                 svg.on('.port', null);
                 d3.event.stopPropagation();
             };
         };
 
+        // 只为output绑定绘制连线事件
+        node4svg.selectAll('.node-port.node-port-output')
+            .on('mousedown', mousedown);
+        // 为node-port绑定鼠标交互事件
         node4svg.selectAll('.node-port')
-            .on('mousedown', mousedown)
             .on('mouseenter', mouseenter)
             .on('mouseleave', mouseleave);
+    }
+
+    static drawFakeLine(from, editor){
+        // 绘制连线（用于鼠标绘制连线）
+        let svg = editor.getSVG();
+        let lineGroups = svg.select(`.${Constant.SVG_DT_LINE_GROUP}`);
+        let g = lineGroups.append('svg:g')
+            .classed('dt-line', true);
+        let fromPos = ViewUtil._genPos4FromNode(from);
+        let fakeLine = g.append('svg:path')
+            .classed('path-line', true)
+            .classed('hovered dotted', true)
+            .attr('d', ViewUtil._generateLinePath(
+                fromPos,
+                { x: fromPos.x + fromPos.w, y: fromPos.y + fromPos.h / 2, }
+            ));
+        return {fakeLine, g};
+    }
+
+    static drawLine(from, to, editor){
+        // 绘制两个节点之间的连线
+        let svg = editor.getSVG();
+        let lineGroups = svg.select(`.${Constant.SVG_DT_LINE_GROUP}`);
+        let g = lineGroups.append('svg:g')
+            .attr('id', ViewUtil.uuid())
+            .classed('dt-line', true);
+        let line = g.append('svg:path')
+            .attr('tabindex', -1)
+            .classed('path-line', true)
+            .attr('d', ViewUtil._generateLinePath(
+                ViewUtil._genPos4FromNode(from),
+                ViewUtil._genPos4ToNode(to)
+            ));
+        editor._setRelation(from, to, line, g.attr('id'));
+        // dt-line绑定mouseenter事件
+        let mouseleave = function () {
+            d3.select(this).classed('hovered', false);
+        };
+        let mouseenter = function () {
+            d3.select(this).classed('hovered', true);
+        };
+        let click = function () {
+            d3.select(this).classed('selected', true);
+        };
+        let keyup = function () {
+            // TODO - keyup事件
+            console.log('keyup', d3.event.keyCode);
+        };
+        line.on('mouseenter', mouseenter)
+            .on('mouseleave', mouseleave)
+            .on('click', click)
+            .on('keyup', keyup)
+    }
+
+    static _bindEventOnNode(editor, node4svg){
+        // 给节点.port > .node-port绑定mouseenter事件
+        ViewUtil._bindEventOnNodePort(editor, node4svg);
+        let mouseleave = function () {
+            d3.select(this).classed('hovered', false);
+        };
+        let mouseenter = function () {
+            d3.select(this).classed('hovered', true);
+        };
+        let clicked = function () {
+            d3.select(this).classed('selected', true);
+        };
+        // 为节点绑定单击事件
+        node4svg.on('mouseleave', mouseleave);
+        node4svg.on('mouseenter', mouseenter);
+        node4svg.on('click', clicked);
+        node4svg.on('keydown', function () {
+            console.log('keydown')
+        });
+        // TODO - 为节点绑定双击事件
+
+        // TODO - 为节点绑定keyup事件
+
     }
 
     static hasRelation(editor, from, to, reverse = false) {
@@ -440,19 +524,40 @@ class ViewUtil {
     static _drawNodeOnCanvas(config, editor) {
         // 添加节点到画布
         let node4svg = ViewUtil.getNodeTpl4SVG(config, editor);
+        // 缓存节点数据
         node4svg.datum(config);
-        ViewUtil.transform(node4svg, config.x, config.y);
+        // 为节点获取最佳宽度
         ViewUtil._updateNodeSize(node4svg, editor);
+        // 根据节点最新宽度调整节点坐标
+        ViewUtil._fixNodePos(editor, node4svg);
+        ViewUtil.transform(node4svg, config.x, config.y);
         // 给节点绑定拖拽事件
         node4svg.call(ViewUtil._dragNodeOnCanvas(editor)());
-        // 给节点.port > .node-port绑定mouseenter事件
-        ViewUtil._bindEventOnNodePort(editor, node4svg);
+        // 给node节点绑定事件
+        ViewUtil._bindEventOnNode(editor, node4svg);
         return node4svg;
+    }
+
+    static _fixNodePos(editor, node){
+        // 根据节点最新宽度调整节点坐标
+        if(ViewUtil.isOverstepBoundary(editor, node)){
+            let datum = node.datum();
+            let rect = ViewUtil._getNodeSize(node);
+            let canvas = {
+                w: editor.config.settings.size,
+                h: editor.config.settings.size
+            };
+            let offset = 0;
+            // 只处理宽度越界
+            if((offset = rect.x + rect.w - canvas.w) > 0){
+                datum.x = rect.x - offset - 10;
+            }
+        }
     }
 
     static _drawSVGCanvas(settings) {
         // 绘制svg节点
-        return d3.select(`#${Constant.CANVAS_ID}`)
+        let svg = d3.select(`#${Constant.CANVAS_ID}`)
             .append('svg:svg')
             .attr('height', settings.size)
             .attr('width', settings.size)
@@ -462,6 +567,7 @@ class ViewUtil {
                 // 屏蔽默认右键菜单事件
                 d3.event.preventDefault();
             });
+        return svg;
     }
 
     static _drawRectAsBackground(g, settings) {

@@ -1,0 +1,81 @@
+@import "mixin";
+.dt-palette {
+    @width4palette: 165px;
+    @color4selected: @borderColorHighlight;
+    display: inline-block;
+    min-width: @width4palette;
+    height: 100%;
+    z-index: 1;
+    background: #f3f3f3;
+    border: 1px solid #bbb;
+    box-sizing: border-box;
+    .node-tpl {
+        background: rgb(228, 145, 145);
+        height: 28px;
+        cursor: move;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        border: 1px solid #999;
+        background-position: 5% 50%;
+        background-repeat: no-repeat;
+        width: 120px;
+        background-size: contain;
+        position: relative;
+        &:hover {
+            border-color: @color4selected;
+            .node-port {
+                border-color: #999;
+                background-color: #eee;
+            }
+        }
+        .node-label {
+            font-size: 13px;
+            margin: 4px 0 4px 30px;
+            line-height: 20px;
+            overflow: hidden;
+            text-align: center;
+            pointer-events: none;
+            user-select: none;
+            stroke: none;
+        }
+        .node-icon-container {
+            position: absolute;
+            text-align: center;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            height: 28px;
+            width: 28px;
+            border-right: 1px solid rgba(0, 0, 0, 0.1);
+            background-color: rgba(0, 0, 0, 0.05);
+            box-sizing: border-box;
+            border-top-left-radius: 5px;
+            border-bottom-left-radius: 5px;
+        }
+        .node-port {
+            position: absolute;
+            top: 8px;
+            left: -5px;
+            box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            background: #d9d9d9;
+            border-radius: 3px;
+            width: 10px;
+            height: 10px;
+            border: 1px solid #999;
+            &.node-port-outputs {
+                left: auto;
+                right: -6px;
+            }
+        }
+        .dt-icon {
+            display: inline-block;
+            width: 20px;
+            height: 29px;
+            background-position: 50% 50%;
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+    }
+}
