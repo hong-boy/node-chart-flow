@@ -269,7 +269,7 @@ class ViewUtil {
                     d.y = y;
                     let node = d3.select(this);
                     // 判断节点是否越过边界
-                    if(ViewUtil.isOverstepBoundary(editor, node)){
+                    if (ViewUtil.isOverstepBoundary(editor, node)) {
                         d.x = ox;
                         d.y = oy;
                     }
@@ -288,7 +288,7 @@ class ViewUtil {
         };
     }
 
-    static _getNodeSize(node){
+    static _getNodeSize(node) {
         // 获取节点坐标和宽高
         let datum = node.datum();
         let rectNode = node.select(`.${Constant.SVG_NODE_RECT}`);
@@ -296,7 +296,7 @@ class ViewUtil {
             x: datum.x,
             y: datum.y,
             w: parseInt(rectNode.attr('width')),
-            h: parseInt(rectNode.attr('height'))
+            h: parseInt(rectNode.attr('height')),
         };
         return rect;
     }
@@ -307,14 +307,14 @@ class ViewUtil {
             x: 0,
             y: 0,
             w: editor.config.settings.size,
-            h: editor.config.settings.size
+            h: editor.config.settings.size,
         };
         let rect = ViewUtil._getNodeSize(node);
         let flag = false;
-        if(rect.x < canvas.x
-            || rect.y < canvas.y
-            || rect.x+rect.w > canvas.w
-            || rect.y+rect.h > canvas.h){
+        if (rect.x < canvas.x ||
+            rect.y < canvas.y ||
+            rect.x + rect.w > canvas.w ||
+            rect.y + rect.h > canvas.h) {
             flag = true;
         }
         return flag;
@@ -371,7 +371,7 @@ class ViewUtil {
         let mousedown = function () {
             let rect = node4svg.select('.node-rect');
             let svg = editor.getSVG();
-            let {fakeLine, g} = ViewUtil.drawFakeLine(node4svg, editor);
+            let { fakeLine, g, } = ViewUtil.drawFakeLine(node4svg, editor);
             svg.on('mouseup.port', mouseup4line(g, fakeLine, svg, node4svg));
             let mousemove = function () {
                 // 更新fakeLine
@@ -424,7 +424,7 @@ class ViewUtil {
             .on('mouseleave', mouseleave);
     }
 
-    static drawFakeLine(from, editor){
+    static drawFakeLine(from, editor) {
         // 绘制连线（用于鼠标绘制连线）
         let svg = editor.getSVG();
         let lineGroups = svg.select(`.${Constant.SVG_DT_LINE_GROUP}`);
@@ -438,10 +438,10 @@ class ViewUtil {
                 fromPos,
                 { x: fromPos.x + fromPos.w, y: fromPos.y + fromPos.h / 2, }
             ));
-        return {fakeLine, g};
+        return { fakeLine, g, };
     }
 
-    static drawLine(from, to, editor){
+    static drawLine(from, to, editor) {
         // 绘制两个节点之间的连线
         let svg = editor.getSVG();
         let lineGroups = svg.select(`.${Constant.SVG_DT_LINE_GROUP}`);
@@ -464,19 +464,35 @@ class ViewUtil {
             d3.select(this).classed('hovered', true);
         };
         let click = function () {
+            d3.selectAll(`.selected`).classed('selected', false);
             d3.select(this).classed('selected', true);
         };
         let keyup = function () {
-            // TODO - keyup事件
-            console.log('keyup', d3.event.keyCode);
+            // 删除连线
+            if(d3.event.keyCode === Constant.KEY_CODE_DELETE){
+                let line = d3.select(this);
+                ViewUtil.deleteLine(line, editor);
+            }
         };
         line.on('mouseenter', mouseenter)
             .on('mouseleave', mouseleave)
             .on('click', click)
-            .on('keyup', keyup)
+            .on('keyup', keyup);
     }
 
-    static _bindEventOnNode(editor, node4svg){
+    static deleteLine(line, editor){
+        // 删除连线
+        let g = d3.select(line.node().parentNode);
+        let id = g.attr('id');
+        let bean = editor._getRelation(id);
+        let {from, to} = bean;
+        editor.emit(Constant.EVENT_DELETED_LINE, {id, from, to});
+        // 从画布移除
+        editor._removeRelation(id);
+        g.remove();
+    }
+
+    static _bindEventOnNode(editor, node4svg) {
         // 给节点.port > .node-port绑定mouseenter事件
         ViewUtil._bindEventOnNodePort(editor, node4svg);
         let mouseleave = function () {
@@ -486,19 +502,44 @@ class ViewUtil {
             d3.select(this).classed('hovered', true);
         };
         let clicked = function () {
+            d3.selectAll(`.selected`).classed('selected', false);
             d3.select(this).classed('selected', true);
         };
         // 为节点绑定单击事件
         node4svg.on('mouseleave', mouseleave);
         node4svg.on('mouseenter', mouseenter);
         node4svg.on('click', clicked);
-        node4svg.on('keydown', function () {
-            console.log('keydown')
+        node4svg.on('keyup', function () {
+            switch(d3.event.keyCode){
+                case Constant.KEY_CODE_DELETE: {
+                    ViewUtil.deleteNode(d3.select(this), editor);
+                    break;
+                }
+                case Constant.KEY_CODE_ENTER: {
+                    // ViewUtil.deleteNode(d3.select(this), editor);
+                    console.log('enter pressed');
+                    break;
+                }
+            }
         });
         // TODO - 为节点绑定双击事件
 
         // TODO - 为节点绑定keyup事件
 
+    }
+
+    static deleteNode(node, editor){
+        // 删除节点
+        let datum = node.datum();
+        let id = node.attr('id');
+        // 删除连线
+        editor.getRelations().forEach(item=>{
+            if(item.from.attr('id') === id || item.to.attr('id') === id){
+                ViewUtil.deleteLine(item.line, editor);
+            }
+        });
+        node.remove();
+        editor.emit(Constant.EVENT_DELETED_NODE, {datum});
     }
 
     static hasRelation(editor, from, to, reverse = false) {
@@ -538,18 +579,18 @@ class ViewUtil {
         return node4svg;
     }
 
-    static _fixNodePos(editor, node){
+    static _fixNodePos(editor, node) {
         // 根据节点最新宽度调整节点坐标
-        if(ViewUtil.isOverstepBoundary(editor, node)){
+        if (ViewUtil.isOverstepBoundary(editor, node)) {
             let datum = node.datum();
             let rect = ViewUtil._getNodeSize(node);
             let canvas = {
                 w: editor.config.settings.size,
-                h: editor.config.settings.size
+                h: editor.config.settings.size,
             };
             let offset = 0;
             // 只处理宽度越界
-            if((offset = rect.x + rect.w - canvas.w) > 0){
+            if ((offset = rect.x + rect.w - canvas.w) > 0) {
                 datum.x = rect.x - offset - 10;
             }
         }
@@ -570,13 +611,118 @@ class ViewUtil {
         return svg;
     }
 
-    static _drawRectAsBackground(g, settings) {
+    static _drawRectAsBackground(g, settings, editor) {
         // 绘制rect节点作为背景画布
-        g.append('svg:rect')
+        let bg = g.append('svg:rect')
+            .attr('tabindex', -1)
             .attr('class', 'dt-c-bg')
             .attr('width', settings.size)
             .attr('height', settings.size)
             .attr('fill', Constant.SVG_BG_COLOR);
+        bg.on('mousedown', function () {
+            if(d3.event.button === Constant.KEY_CODE_MOUSE_LEFT){
+                // draw lasso
+                let mousePos = d3.mouse(this);
+                let ox = mousePos[0];
+                let oy = mousePos[1];
+                let x = ox;
+                let y = oy;
+                let svg = editor.getSVG();
+                let canvas = svg.select(`.${Constant.SVG_INNER_CANVAS}`);
+                let lasso = canvas.append('svg:rect')
+                    .classed('lasso', true)
+                    .attr('x', x)
+                    .attr('y', y)
+                    .attr('width', 1)
+                    .attr('height', 1);
+                d3.selectAll(`.dt-node-group`).style('pointer-events', 'none');
+
+                bg.on('mousemove.lasso', function () {
+                    let mousePos = d3.mouse(this);
+                    let mx = mousePos[0];
+                    let my = mousePos[1];
+
+                    let x = parseInt(lasso.attr('x'));
+                    let y = parseInt(lasso.attr('y'));
+
+                    let w = mx - ox;
+                    let h = my - oy;
+
+                    let isDirtyX = false;
+                    let isDirtyY = false;
+
+                    if(w < 0){
+                        x = mx;
+                        isDirtyX = true;
+                    }
+                    if(h < 0){
+                        y = my;
+                        isDirtyY = true;
+                    }
+
+                    if(isDirtyX){
+                        lasso.attr('x', x);
+                    }
+                    if(isDirtyY){
+                        lasso.attr('y', y);
+                    }
+
+                    lasso.attr('width', Math.abs(w));
+                    lasso.attr('height', Math.abs(h));
+                });
+                bg.on('mouseup.lasso', function () {
+                    // 判断是否有节点被覆盖
+                    ViewUtil.clearSelectedOnCanvas(editor);
+                    let boudary = {
+                        x: parseInt(lasso.attr('x')),
+                        y: parseInt(lasso.attr('y')),
+                        w: parseInt(lasso.attr('width')),
+                        h: parseInt(lasso.attr('height')),
+                    };
+                    d3.selectAll(`.${Constant.SVG_DT_NODE}`)
+                        .nodes()
+                        .forEach(item=>{
+                            let node = d3.select(item);
+                            let b = ViewUtil._getNodeSize(node);
+                            if(ViewUtil.collide(boudary, b)){
+                                node.classed('selected', true);
+                            }
+                        });
+                    lasso.remove();
+                    d3.selectAll(`.dt-node-group`).style('pointer-events', 'auto');
+                    bg.on('.lasso', null);
+                });
+            }
+        });
+        bg.on('keyup', function () {
+            if(d3.event.keyCode === Constant.KEY_CODE_DELETE){
+                d3.selectAll(`.${Constant.SVG_DT_NODE}.selected`)
+                    .nodes()
+                    .forEach(item=>{
+                        ViewUtil.deleteNode(d3.select(item), editor);
+                    });
+            }
+        })
+    }
+
+    static clearSelectedOnCanvas(editor) {
+        editor.getSVG().selectAll('.selected').classed('selected', false);
+    }
+
+    static collide(rect1,rect2) {
+        // 判断矩形是否碰撞
+        var maxX,maxY,minX,minY;
+
+        maxX = rect1.x+rect1.w >= rect2.x+rect2.w ? rect1.x+rect1.w : rect2.x+rect2.w;
+        maxY = rect1.y+rect1.h >= rect2.y+rect2.h ? rect1.y+rect1.h : rect2.y+rect2.h;
+        minX = rect1.x <= rect2.x ? rect1.x : rect2.x;
+        minY = rect1.y <= rect2.y ? rect1.y : rect2.y;
+
+        if(maxX - minX <= rect1.w+rect2.w && maxY - minY <= rect1.h+rect2.h){
+            return true
+        }else{
+            return false
+        }
     }
 
     static _drawGrid(grid, settings) {
@@ -666,7 +812,7 @@ class ViewUtil {
         editor._setSVG(svg);
         let g4canvas = svg.append('svg:g').attr('class', Constant.SVG_INNER_CANVAS);
         // 绘制rect背景
-        ViewUtil._drawRectAsBackground(g4canvas, settings);
+        ViewUtil._drawRectAsBackground(g4canvas, settings, editor);
         // 绘制网格grid
         let grid = g4canvas.append('svg:g').attr('class', Constant.SVG_GRID);
         ViewUtil._drawGrid(grid, settings);

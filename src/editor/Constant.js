@@ -26,4 +26,10 @@ export default {
     DEFAULT_NODE_STATUS_ERROR_COLOR: '#ff6600',
     SVG_LINE_FACTOR_NODE_WIDTH: 100,
     SVG_LINE_FACTOR_NODE_HEIGHT: 30,
+    KEY_CODE_DELETE: 46,
+    KEY_CODE_ENTER: 13,
+    KEY_CODE_MOUSE_LEFT: 0, // 鼠标左键
+    KEY_CODE_MOUSE_RIGHT: 2, // 鼠标右键
+    EVENT_DELETED_LINE: 'deleted-line', // 连线被删除后触发的事件
+    EVENT_DELETED_NODE: 'deleted-node', // 节点被删除后触发的事件
 };

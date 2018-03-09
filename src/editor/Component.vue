@@ -24,6 +24,9 @@
                 thiz.editor = new Editor(thiz.$el, config);
                 thiz.$emit('registerNodeType', thiz.editor);
                 thiz.editor.init();
+                thiz.editor.on('deleted-line', function (...args) {
+                    console.log(args)
+                });
             })
         },
         destroyed(){

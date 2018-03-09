@@ -3,6 +3,7 @@ import $ from 'jquery';
 import NodeType from './NodeType.js';
 import util from './ViewUtil.js';
 import Constant from './Constant.js';
+import Events from 'events';
 
 /**
  * 默认编辑器配置
@@ -32,20 +33,21 @@ const PROP_DIALOG_EVENTS = {
 };
 
 
-class Editor {
+class Editor extends Events{
     /**
      * 构造器
      * @param el 依附的容器节点
      * @param config 编辑器的配置
      */
     constructor(el, config) {
+        super();
         this._debug = true; // 用于打印关键信息方便调试
         this.config = $.extend(true, {}, DEFAULT_CONFIG, config);
         this.$el = $(el);
         this.$palette = this.$el.find('.dt-palette');
         this.$workspace = this.$el.find('.dt-workspace');
         this.$canvas = this.$workspace.find('.dt-canvas').attr('id', Constant.CANVAS_ID);
-        this.$helper = this.$el.find('.dt-helper');
+        // this.$helper = this.$el.find('.dt-helper');
         this.___svg = null; // 存放d3生成的svg实例
         this.___def = {
             NodeCatagory: new Set(), // 节点类别
@@ -160,6 +162,10 @@ class Editor {
 
     _removeRelation(id) {
         this.___def.Relations.delete(id);
+    }
+
+    _getRelation(id){
+        return this.___def.Relations.get(id);
     }
 
     getRelations() {

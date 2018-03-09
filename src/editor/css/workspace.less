@@ -14,6 +14,13 @@
     background:#77d176;
     overflow: auto;
     z-index: 0;
+    .lasso {
+        stroke-width: 1px;
+        stroke: @color4selected;
+        fill: rgba(20,125,255,0.1);
+        stroke-dasharray: 10 5;
+        pointer-events: none;
+    }
     .dt-canvas {
         display: inline-block;
         position: relative;
@@ -28,6 +35,12 @@
         width: 100%;
         height: @dtFooterHeight;
     }
+    .dt-c-grid {
+        pointer-events: none;
+    }
+    .dt-c-bg {
+        outline: none;
+    }
     .dt-node {
         cursor: move;
         &.hovered,
@@ -36,6 +49,7 @@
                 stroke: @color4selected;
             }
         }
+        outline: none;
     }
     .dt-line {
         .path-line {
@@ -50,12 +64,14 @@
             &.dotted {
                 stroke-dasharray: 10;
             }
+            outline: none;
         }
     }
     .node-rect {
         stroke: #999;
         cursor: move;
         stroke-width: 2;
+        outline: none;
     }
     .node-label {
         pointer-events: none;
