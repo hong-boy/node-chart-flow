@@ -174,36 +174,121 @@ class ViewUtil {
     }
 
     static transform(node4svg, x, y) {
-        node4svg.attr('transform', `translate(${parseInt(x)}, ${parseInt(y)})`);
+        window.requestAnimationFrame(function () {
+            node4svg.attr('transform', `translate(${parseInt(x)}, ${parseInt(y)})`);
+        })
+    }
+
+    static judgeNodeIntersectOnLine(x, y, editor){
+        // 判断dt-pallete中拖出的节点是否与dt-line相交
+        // dt-pallete中节点的大小固定为：120 x 30
+        const PALLETE_NODE_WIDTH = 120;
+        const PALLETE_NODE_HEIGHT = 30;
+        const PALLETE_CLIP_WIDTH = 30;
+        // 定义clip矩形
+        let clip = {
+            x: x+((PALLETE_NODE_WIDTH - PALLETE_CLIP_WIDTH) / 2),
+            y,
+            w: PALLETE_CLIP_WIDTH,
+            h: PALLETE_NODE_HEIGHT
+        };
+        let legalLine = [];
+        editor.getRelations().forEach(item=>{
+            let line = item.line;
+            let lineSVG = line.node();
+            // 获取连线的总长度
+            let len = lineSVG.getTotalLength();
+            // 从连线上抽取一定数量的坐标点作为样本
+            // 判断有多少样本落在clip矩形内
+            let sample = [];
+            for(let i = 0; i<len; i+=10){
+                let p = lineSVG.getPointAtLength(i);
+                if(ViewUtil.isPointInRect(p, clip)){
+                    sample.push(p);
+                }
+            }
+            if(sample.length){
+                legalLine.push(item);
+            }
+        });
+        return legalLine;
+    }
+
+    static isPointInRect(point, rect){
+        // 判断点是否落在矩形内
+        return (
+            (point.x >= rect.x && point.x <= (rect.x + rect.w) )
+            && (point.y >= rect.y && point.y <= (rect.y + rect.h) )
+        );
+    }
+
+    static clearLineSplice(editor){
+        // 清除line-splice样式
+        editor.getSVG().selectAll(`.${Constant.SVG_DT_LINE}.${Constant.SVG_LINE_SPLICE}`)
+            .classed(`${Constant.SVG_LINE_SPLICE}`, false);
     }
 
     static dragAndDrop4Palette(editor) {
         // 绑定拖拽事件 - dt-palette
         let start = function (e, ui) {
             let nodeTypeConfig = $(e.target).data(Constant.PALETTE_NODE_CONFIG);
-            ui.helper.data(Constant.PALETTE_NODE_CONFIG, nodeTypeConfig.nodeTypeId);
+            ui.helper.data(Constant.PALETTE_NODE_CONFIG, nodeTypeConfig);
+        };
+        let drag = function (e, ui) {
+            // TODO - 支持在两个节点中间拖拽添加 line_splice
+            let nc = ui.helper.data(Constant.PALETTE_NODE_CONFIG);
+            if(nc.inputs.enable && nc.outputs.enable){
+                // 若当前节点同时支持输入和输出，则开启此效果
+                let factor = Constant.SVG_PALLETE_FACTOR_Y; // y轴总是有11px的误差 (待观察)- TODO
+                let offset = ui.offset;
+                let $canvas = editor.$canvas;
+                let offset4thiz = $canvas.offset();
+                let y = $canvas.scrollTop() + offset.top - offset4thiz.top + factor;
+                let x = $canvas.scrollLeft() + offset.left - offset4thiz.left;
+                ViewUtil.clearLineSplice(editor);
+                ui.helper.data(Constant.TAG_LINE_SPLICE, null);
+                let lineArr = ViewUtil.judgeNodeIntersectOnLine(x, y, editor);
+                if(lineArr.length){
+                    // 默认取出第一条连线
+                    let item = lineArr[0];
+                    let line = item.line;
+                    let lineGroup = d3.select(line.node().parentNode);
+                    lineGroup.classed(`${Constant.SVG_LINE_SPLICE}`, true);
+                    ui.helper.data(Constant.TAG_LINE_SPLICE, item);
+                }
+            }
         };
         let drop = function (e, ui) {
-            let factor = 11; // y轴总是有11px的误差 (待观察)- TODO
+            let factor = Constant.SVG_PALLETE_FACTOR_Y; // y轴总是有11px的误差 (待观察)- TODO
             let offset = ui.offset;
             let offset4thiz = $(this).offset();
             let $canvas = editor.$canvas;
             let y = $canvas.scrollTop() + offset.top - offset4thiz.top + factor;
             let x = $canvas.scrollLeft() + offset.left - offset4thiz.left;
-            let nodeTypeId = ui.helper.data(Constant.PALETTE_NODE_CONFIG);
+            let nodeTypeId = ui.helper.data(Constant.PALETTE_NODE_CONFIG)['nodeTypeId'];
             let RealNodeType = editor.getNodeTypes().get(nodeTypeId);
             let nodeId = uuid();
             let nodeTypeConfig = new RealNodeType();
             nodeTypeConfig.x = x;
             nodeTypeConfig.y = y;
             nodeTypeConfig.nodeId = nodeId;
-            ViewUtil._drawNodeOnCanvas(nodeTypeConfig, editor);
+            let newNode = ViewUtil._drawNodeOnCanvas(nodeTypeConfig, editor);
+            ViewUtil.clearLineSplice(editor);
+            let lineSpliceItem = ui.helper.data(Constant.TAG_LINE_SPLICE);
+            // 判断是否是line-splice
+            if(lineSpliceItem){
+                ViewUtil.deleteLine(lineSpliceItem.line, editor);
+                ViewUtil.drawLine(lineSpliceItem.from, newNode, editor);
+                ViewUtil.drawLine(newNode, lineSpliceItem.to, editor);
+            }
+            ui.helper.data(Constant.TAG_LINE_SPLICE, null);
         };
         $('.node-tpl', editor.$palette).draggable({
             helper: 'clone',
             revert: 'invalid',
             containment: editor.$el,
             start,
+            drag
         });
         editor.$canvas.droppable({
             accept: '.node-tpl',
@@ -261,11 +346,11 @@ class ViewUtil {
                 let start = function (d) {
                     let node = d3.select(this);
                     let isSelected = node.classed('selected');
-                    if(!isSelected){
+                    if (!isSelected) {
                         ViewUtil.clearSelectedOnCanvas(editor);
                         node.classed('selected', true);
                     }
-                    let selectedNodes = d3.selectAll(`.${Constant.SVG_DT_NODE}.selected`).nodes();
+                    let selectedNodes = editor.getSVG().selectAll(`.${Constant.SVG_DT_NODE}.selected`).nodes();
                     d.isMutiMode = selectedNodes.length > 1;
                     d.selectedNodes = selectedNodes;
                 };
@@ -274,25 +359,26 @@ class ViewUtil {
                     let y = d3.event.y;
                     let ox = d.x;
                     let oy = d.y;
-                    if(d.isMutiMode) {
+                    console.log('drag', x, y, ox, oy, d.isMutiMode);
+                    if (d.isMutiMode) {
                         // 多个节点拖动
                         let dx = parseInt(d3.event.dx);
                         let dy = parseInt(d3.event.dy);
                         let illegalNodes = [];
-                        for(let i = 0, len = d.selectedNodes.length; i < len; i++){
+                        for (let i = 0, len = d.selectedNodes.length; i < len; i++) {
                             let item = d.selectedNodes[i];
                             let n = d3.select(item);
                             let datum = n.datum();
                             datum.x = datum.x + dx;
                             datum.y = datum.y + dy;
-                            if(ViewUtil.isOverstepBoundary(editor, n)){
+                            if (ViewUtil.isOverstepBoundary(editor, n)) {
                                 illegalNodes.push(n);
                             }
                             datum.x = datum.x - dx;
                             datum.y = datum.y - dy;
                         }
-                        if(!illegalNodes.length){
-                            d.selectedNodes.forEach(item=>{
+                        if (!illegalNodes.length) {
+                            d.selectedNodes.forEach((item) => {
                                 let n = d3.select(item);
                                 let datum = n.datum();
                                 datum.x = datum.x + dx;
@@ -300,7 +386,7 @@ class ViewUtil {
                                 ViewUtil.transform(n, datum.x, datum.y);
                             });
                         }
-                    }else {
+                    } else {
                         // 单个节点拖动
                         d.x = x;
                         d.y = y;
@@ -316,7 +402,9 @@ class ViewUtil {
                     // 更新连线位置
                     ViewUtil.updateAllLinePath(editor);
                 };
-                let end = function (d) {};
+                let end = function (d) {
+                    d.selectedNodes = null;
+                };
                 inst4drag = editor.___inst4drag = d3.drag()
                     .on('start', start)
                     .on('drag', drag)
@@ -329,6 +417,18 @@ class ViewUtil {
     static _getNodeSize(node) {
         // 获取节点坐标和宽高
         let datum = node.datum();
+        let rect = {
+            x: datum.x,
+            y: datum.y,
+            w: datum.w,
+            h: datum.h,
+        };
+        return rect;
+    }
+
+    static _getNodeSizeRealTime(node) {
+        // 实时获取节点坐标和宽高
+        let datum = node.datum();
         let rectNode = node.select(`.${Constant.SVG_NODE_RECT}`);
         let rect = {
             x: datum.x,
@@ -336,6 +436,9 @@ class ViewUtil {
             w: parseInt(rectNode.attr('width')),
             h: parseInt(rectNode.attr('height')),
         };
+        // 缓存宽高
+        datum.w = rect.w;
+        datum.h = rect.h;
         return rect;
     }
 
@@ -502,12 +605,12 @@ class ViewUtil {
             d3.select(this).classed('hovered', true);
         };
         let click = function () {
-            d3.selectAll(`.selected`).classed('selected', false);
+            d3.selectAll('.selected').classed('selected', false);
             d3.select(this).classed('selected', true);
         };
         let keyup = function () {
             // 删除连线
-            if(d3.event.keyCode === Constant.KEY_CODE_DELETE){
+            if (d3.event.keyCode === Constant.KEY_CODE_DELETE) {
                 let line = d3.select(this);
                 ViewUtil.deleteLine(line, editor);
             }
@@ -518,13 +621,13 @@ class ViewUtil {
             .on('keyup', keyup);
     }
 
-    static deleteLine(line, editor){
+    static deleteLine(line, editor) {
         // 删除连线
         let g = d3.select(line.node().parentNode);
         let id = g.attr('id');
         let bean = editor._getRelation(id);
-        let {from, to} = bean;
-        editor.emit(Constant.EVENT_DELETED_LINE, {id, from, to});
+        let { from, to, } = bean;
+        editor.emit(Constant.EVENT_DELETED_LINE, { id, from, to, });
         // 从画布移除
         editor._removeRelation(id);
         g.remove();
@@ -533,14 +636,6 @@ class ViewUtil {
     static _bindEventOnNode(editor, node4svg) {
         // 给节点.port > .node-port绑定mouseenter事件
         ViewUtil._bindEventOnNodePort(editor, node4svg);
-        let mousedown = function () {
-            let node = d3.select(this);
-            let isSelected = node.classed('selected');
-            if(!isSelected){
-                ViewUtil.clearSelectedOnCanvas(editor);
-                node.classed('selected', true);
-            }
-        };
         let mouseleave = function () {
             d3.select(this).classed('hovered', false);
         };
@@ -552,41 +647,36 @@ class ViewUtil {
             // d3.select(this).classed('selected', true);
         };
         // 为节点绑定单击事件
-        node4svg.on('mousedown', mousedown);
         node4svg.on('mouseleave', mouseleave);
         node4svg.on('mouseenter', mouseenter);
-        node4svg.on('click', clicked);
+        // node4svg.on('click', clicked);
         node4svg.on('keyup', function () {
-            switch(d3.event.keyCode){
+            switch (d3.event.keyCode) {
                 case Constant.KEY_CODE_DELETE: {
-                    ViewUtil.deleteNode(d3.select(this), editor);
-                    break;
-                }
-                case Constant.KEY_CODE_ENTER: {
-                    // ViewUtil.deleteNode(d3.select(this), editor);
-                    console.log('enter pressed');
+                    editor.getSVG().selectAll(`.${Constant.SVG_DT_NODE}.selected`)
+                        .nodes()
+                        .forEach(item=>{
+                            ViewUtil.deleteNode(d3.select(item), editor);
+                        });
                     break;
                 }
             }
         });
         // TODO - 为节点绑定双击事件
-
-        // TODO - 为节点绑定keyup事件
-
     }
 
-    static deleteNode(node, editor){
+    static deleteNode(node, editor) {
         // 删除节点
         let datum = node.datum();
         let id = node.attr('id');
         // 删除连线
-        editor.getRelations().forEach(item=>{
-            if(item.from.attr('id') === id || item.to.attr('id') === id){
+        editor.getRelations().forEach((item) => {
+            if (item.from.attr('id') === id || item.to.attr('id') === id) {
                 ViewUtil.deleteLine(item.line, editor);
             }
         });
         node.remove();
-        editor.emit(Constant.EVENT_DELETED_NODE, {datum});
+        editor.emit(Constant.EVENT_DELETED_NODE, { datum, });
     }
 
     static hasRelation(editor, from, to, reverse = false) {
@@ -630,7 +720,7 @@ class ViewUtil {
         // 根据节点最新宽度调整节点坐标
         if (ViewUtil.isOverstepBoundary(editor, node)) {
             let datum = node.datum();
-            let rect = ViewUtil._getNodeSize(node);
+            let rect = ViewUtil._getNodeSizeRealTime(node);
             let canvas = {
                 w: editor.config.settings.size,
                 h: editor.config.settings.size,
@@ -660,14 +750,17 @@ class ViewUtil {
 
     static _drawRectAsBackground(g, settings, editor) {
         // 绘制rect节点作为背景画布
-        let bg = g.append('svg:rect')
-            .attr('tabindex', -1)
-            .attr('class', 'dt-c-bg')
-            .attr('width', settings.size)
-            .attr('height', settings.size)
-            .attr('fill', Constant.SVG_BG_COLOR);
-        bg.on('mousedown', function () {
-            if(d3.event.button === Constant.KEY_CODE_MOUSE_LEFT){
+        let keyup = function () {
+            if (d3.event.keyCode === Constant.KEY_CODE_DELETE) {
+                d3.selectAll(`.${Constant.SVG_DT_NODE}.selected`)
+                    .nodes()
+                    .forEach((item) => {
+                        ViewUtil.deleteNode(d3.select(item), editor);
+                    });
+            }
+        };
+        let mousedown = function () {
+            if (d3.event.button === Constant.KEY_CODE_MOUSE_LEFT) {
                 // draw lasso
                 let mousePos = d3.mouse(this);
                 let ox = mousePos[0];
@@ -683,7 +776,7 @@ class ViewUtil {
                     .attr('y', y)
                     .attr('width', 1)
                     .attr('height', 1);
-                d3.selectAll(`.dt-node-group, .dt-line-group`).style('pointer-events', 'none');
+                svg.selectAll('.dt-node-group, .dt-line-group').style('pointer-events', 'none');
 
                 bg.on('mousemove.lasso', function () {
                     let mousePos = d3.mouse(this);
@@ -699,24 +792,24 @@ class ViewUtil {
                     let isDirtyX = false;
                     let isDirtyY = false;
 
-                    if(w < 0){
+                    if (w < 0) {
                         x = mx;
                         isDirtyX = true;
                     }
-                    if(h < 0){
+                    if (h < 0) {
                         y = my;
                         isDirtyY = true;
                     }
 
-                    if(isDirtyX){
+                    if (isDirtyX) {
                         lasso.attr('x', x);
                     }
-                    if(isDirtyY){
+                    if (isDirtyY) {
                         lasso.attr('y', y);
                     }
 
-                    lasso.attr('width', Math.abs(w));
-                    lasso.attr('height', Math.abs(h));
+                    lasso.attr('width', Math.abs(w))
+                        .attr('height', Math.abs(h));
                 });
                 bg.on('mouseup.lasso', function () {
                     // 判断是否有节点被覆盖
@@ -727,28 +820,45 @@ class ViewUtil {
                         w: parseInt(lasso.attr('width')),
                         h: parseInt(lasso.attr('height')),
                     };
-                    d3.selectAll(`.${Constant.SVG_DT_NODE}`)
+                    svg.selectAll(`.${Constant.SVG_DT_NODE}`)
                         .nodes()
-                        .forEach(item=>{
+                        .forEach((item) => {
                             let node = d3.select(item);
-                            let b = ViewUtil._getNodeSize(node);
-                            if(ViewUtil.collide(boudary, b)){
+                            let b = ViewUtil._getNodeSizeRealTime(node);
+                            if (ViewUtil.collide(boudary, b)) {
                                 node.classed('selected', true);
                             }
                         });
                     lasso.remove();
-                    d3.selectAll(`.dt-node-group, .dt-line-group`).style('pointer-events', 'auto');
+                    svg.selectAll('.dt-node-group, .dt-line-group').style('pointer-events', 'auto');
                     bg.on('.lasso', null);
                 });
             }
-        });
-        bg.on('keyup', function () {
-            if(d3.event.keyCode === Constant.KEY_CODE_DELETE){
-                d3.selectAll(`.${Constant.SVG_DT_NODE}.selected`)
-                    .nodes()
-                    .forEach(item=>{
-                        ViewUtil.deleteNode(d3.select(item), editor);
-                    });
+        };
+        let bg = g.append('svg:rect')
+            .attr('tabindex', -1)
+            .attr('class', 'dt-c-bg')
+            .attr('width', settings.size)
+            .attr('height', settings.size)
+            .attr('fill', Constant.SVG_BG_COLOR);
+        bg.on('mousedown', mousedown);
+        bg.on('keyup', keyup);
+        bg.on('keydown', function(){
+            // TODO - 绑定 ctrl + C(V) 事件
+            if(d3.event.ctrlKey){
+                let svg = editor.getSVG();
+                switch (d3.event.keyCode){
+                    case Constant.KEY_CODE_ALPHA_C: {
+                        // ctrl + c
+                        let selectedNodes = svg.selectAll(`.${Constant.SVG_DT_NODE}.selected`).nodes();
+
+                        break;
+                    }
+                    case Constant.KEY_CODE_ALPHA_V: {
+                        // ctrl + v
+                        break;
+                    }
+                }
             }
         })
     }
@@ -757,20 +867,20 @@ class ViewUtil {
         editor.getSVG().selectAll('.selected').classed('selected', false);
     }
 
-    static collide(rect1,rect2) {
+    static collide(rect1, rect2) {
         // 判断矩形是否碰撞
-        var maxX,maxY,minX,minY;
+        var maxX, maxY, minX, minY;
 
-        maxX = rect1.x+rect1.w >= rect2.x+rect2.w ? rect1.x+rect1.w : rect2.x+rect2.w;
-        maxY = rect1.y+rect1.h >= rect2.y+rect2.h ? rect1.y+rect1.h : rect2.y+rect2.h;
+        maxX = rect1.x + rect1.w >= rect2.x + rect2.w ? rect1.x + rect1.w : rect2.x + rect2.w;
+        maxY = rect1.y + rect1.h >= rect2.y + rect2.h ? rect1.y + rect1.h : rect2.y + rect2.h;
         minX = rect1.x <= rect2.x ? rect1.x : rect2.x;
         minY = rect1.y <= rect2.y ? rect1.y : rect2.y;
 
-        if(maxX - minX <= rect1.w+rect2.w && maxY - minY <= rect1.h+rect2.h){
-            return true
-        }else{
-            return false
+        if (maxX - minX <= rect1.w + rect2.w && maxY - minY <= rect1.h + rect2.h) {
+            return true;
         }
+            return false;
+
     }
 
     static _drawGrid(grid, settings) {

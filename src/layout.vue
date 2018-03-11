@@ -46,7 +46,8 @@
                             this.nodeTypeId = TransformNodeType.id();
                             this.color = 'rgb(176, 223, 227)';
                             this.label = function (editor) {
-                                return 'transformtransformNodetransformNode';
+//                                return 'transformtransformNodetransformNode';
+                                return 'transform';
                             };
                             this.inputs = {
                                 enable: true,

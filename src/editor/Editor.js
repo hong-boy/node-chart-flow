@@ -33,7 +33,7 @@ const PROP_DIALOG_EVENTS = {
 };
 
 
-class Editor extends Events{
+class Editor extends Events {
     /**
      * 构造器
      * @param el 依附的容器节点
@@ -164,7 +164,7 @@ class Editor extends Events{
         this.___def.Relations.delete(id);
     }
 
-    _getRelation(id){
+    _getRelation(id) {
         return this.___def.Relations.get(id);
     }
 

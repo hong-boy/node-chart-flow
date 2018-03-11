@@ -43,6 +43,7 @@
     }
     .dt-node {
         cursor: move;
+        will-change: transform;
         &.hovered,
         &.selected {
             .node-rect {
@@ -52,6 +53,11 @@
         outline: none;
     }
     .dt-line {
+        &.line-splice {
+            .path-line {
+                stroke-dasharray: 15, 8;
+            }
+        }
         .path-line {
             stroke: #888;
             stroke-width: 3;
