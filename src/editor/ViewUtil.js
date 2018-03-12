@@ -235,28 +235,30 @@ class ViewUtil {
             ui.helper.data(Constant.PALETTE_NODE_CONFIG, nodeTypeConfig);
         };
         let drag = function (e, ui) {
-            // TODO - 支持在两个节点中间拖拽添加 line_splice
-            let nc = ui.helper.data(Constant.PALETTE_NODE_CONFIG);
-            if(nc.inputs.enable && nc.outputs.enable){
-                // 若当前节点同时支持输入和输出，则开启此效果
-                let factor = Constant.SVG_PALLETE_FACTOR_Y; // y轴总是有11px的误差 (待观察)- TODO
-                let offset = ui.offset;
-                let $canvas = editor.$canvas;
-                let offset4thiz = $canvas.offset();
-                let y = $canvas.scrollTop() + offset.top - offset4thiz.top + factor;
-                let x = $canvas.scrollLeft() + offset.left - offset4thiz.left;
-                ViewUtil.clearLineSplice(editor);
-                ui.helper.data(Constant.TAG_LINE_SPLICE, null);
-                let lineArr = ViewUtil.judgeNodeIntersectOnLine(x, y, editor);
-                if(lineArr.length){
-                    // 默认取出第一条连线
-                    let item = lineArr[0];
-                    let line = item.line;
-                    let lineGroup = d3.select(line.node().parentNode);
-                    lineGroup.classed(`${Constant.SVG_LINE_SPLICE}`, true);
-                    ui.helper.data(Constant.TAG_LINE_SPLICE, item);
+            // 支持在两个节点中间拖拽添加 line_splice
+            window.requestAnimationFrame(function () {
+                let nc = ui.helper.data(Constant.PALETTE_NODE_CONFIG);
+                if(nc.inputs.enable && nc.outputs.enable){
+                    // 若当前节点同时支持输入和输出，则开启此效果
+                    let factor = Constant.SVG_PALLETE_FACTOR_Y; // y轴总是有11px的误差 (待观察)- TODO
+                    let offset = ui.offset;
+                    let $canvas = editor.$canvas;
+                    let offset4thiz = $canvas.offset();
+                    let y = $canvas.scrollTop() + offset.top - offset4thiz.top + factor;
+                    let x = $canvas.scrollLeft() + offset.left - offset4thiz.left;
+                    ViewUtil.clearLineSplice(editor);
+                    ui.helper.data(Constant.TAG_LINE_SPLICE, null);
+                    let lineArr = ViewUtil.judgeNodeIntersectOnLine(x, y, editor);
+                    if(lineArr.length){
+                        // 默认取出第一条连线
+                        let item = lineArr[0];
+                        let line = item.line;
+                        let lineGroup = d3.select(line.node().parentNode);
+                        lineGroup.classed(`${Constant.SVG_LINE_SPLICE}`, true);
+                        ui.helper.data(Constant.TAG_LINE_SPLICE, item);
+                    }
                 }
-            }
+            });
         };
         let drop = function (e, ui) {
             let factor = Constant.SVG_PALLETE_FACTOR_Y; // y轴总是有11px的误差 (待观察)- TODO
@@ -359,7 +361,7 @@ class ViewUtil {
                     let y = d3.event.y;
                     let ox = d.x;
                     let oy = d.y;
-                    console.log('drag', x, y, ox, oy, d.isMutiMode);
+
                     if (d.isMutiMode) {
                         // 多个节点拖动
                         let dx = parseInt(d3.event.dx);
@@ -699,6 +701,19 @@ class ViewUtil {
         return relation;
     }
 
+    static cloneNode(sourceNode, editor){
+        // 克隆节点（深克隆）
+        // TODO - 考虑config.prop属性被双向绑定的情况
+        let settings = editor.config.settings;
+        let srcDatum = sourceNode.datum();
+        let clonedDatum = $.extend(true, {}, srcDatum);
+        clonedDatum.nodeId = ViewUtil.uuid();
+        // TODO - 节点坐标适当偏移
+        clonedDatum.x += 5;
+        clonedDatum.y += 10;
+        return ViewUtil._drawNodeOnCanvas(clonedDatum, editor);
+    }
+
     static _drawNodeOnCanvas(config, editor) {
         // 添加节点到画布
         let node4svg = ViewUtil.getNodeTpl4SVG(config, editor);
@@ -850,12 +865,42 @@ class ViewUtil {
                 switch (d3.event.keyCode){
                     case Constant.KEY_CODE_ALPHA_C: {
                         // ctrl + c
-                        let selectedNodes = svg.selectAll(`.${Constant.SVG_DT_NODE}.selected`).nodes();
-
+                        let copyedNodes = svg.selectAll(`.${Constant.SVG_DT_NODE}.selected`).nodes();
+                        editor._setCopyedNodes(copyedNodes);
+                        console.log('复制了 ', copyedNodes.length, ' 个节点');
                         break;
                     }
                     case Constant.KEY_CODE_ALPHA_V: {
                         // ctrl + v
+                        let copyedNodes = Array.from(editor.getCopyedNodes());
+                        console.log('粘贴了 ', copyedNodes.length, ' 个节点');
+                        ViewUtil.clearSelectedOnCanvas(editor);
+                        let map = new Map();
+                        // 复制节点
+                        copyedNodes.forEach(item=>{
+                            let srcNode = d3.select(item);
+                            let clonedNode = ViewUtil.cloneNode(srcNode, editor);
+                            clonedNode.classed('selected', true);
+                            map.set(srcNode.datum().nodeId, clonedNode);
+                        });
+                        // 复制连线关系
+                        let set = new Set();
+                        // 过滤出要复制的连线
+                        editor.getRelations().forEach(lineItem=>{
+                            if(copyedNodes.indexOf(lineItem.from) && copyedNodes.indexOf(lineItem.to)){
+                                set.add(lineItem);
+                            }
+                        });
+                        // 确定from和to节点
+                        set.forEach(lineItem=>{
+                            let fromId = lineItem.from.datum().nodeId;
+                            let toId = lineItem.to.datum().nodeId;
+                            let clonedFromNode = map.get(fromId);
+                            let clonedToNode = map.get(toId);
+                            if(clonedFromNode && clonedToNode){
+                                ViewUtil.drawLine(clonedFromNode, clonedToNode, editor);
+                            }
+                        });
                         break;
                     }
                 }

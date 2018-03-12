@@ -53,6 +53,7 @@ class Editor extends Events {
             NodeCatagory: new Set(), // 节点类别
             NodeTypes: new Map(), // 节点类型模板类
             Relations: new Map(), // 节点连线
+            CopyedNodes: new Set(), // 被复制的节点
         };
     }
 
@@ -170,6 +171,14 @@ class Editor extends Events {
 
     getRelations() {
         return this.___def.Relations;
+    }
+
+    _setCopyedNodes(nodes){
+        this.___def.CopyedNodes = new Set(nodes);
+    }
+
+    getCopyedNodes(){
+        return this.___def.CopyedNodes;
     }
 }
 
