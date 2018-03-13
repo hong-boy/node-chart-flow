@@ -3,7 +3,8 @@
         <div class="dt-palette"></div>
         <div class="dt-workspace">
             <div class="dt-canvas"></div>
-            <footer class="dt-footer"></footer>
+            <footer class="dt-footer">
+            </footer>
         </div>
         <div class="dt-helper">helper</div>
     </div>

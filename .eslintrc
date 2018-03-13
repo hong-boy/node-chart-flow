@@ -208,7 +208,7 @@
             "always"
         ],
         "max-len":[
-            "error",
+            "warn",
             120
         ],
         "new-cap":[

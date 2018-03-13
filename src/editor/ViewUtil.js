@@ -5,8 +5,10 @@ import uuid from 'uuid/v4';
 import 'jquery-ui/ui/widgets/accordion.js';
 import 'jquery-ui/ui/widgets/draggable.js';
 import 'jquery-ui/ui/widgets/droppable.js';
+import 'jquery-ui/ui/widgets/menu.js';
 import 'jquery-ui/themes/base/accordion.css';
 import 'jquery-ui/themes/base/draggable.css';
+import 'jquery-ui/themes/base/menu.css';
 import Constant from './Constant.js';
 
 class ViewUtil {
@@ -1032,34 +1034,71 @@ class ViewUtil {
         // TODO - 渲染dt-footer
         ViewUtil.renderFooter(editor);
     }
-    static renderFooter(editor){
-        let $footer = editor.$workspace.find(`.dt-footer`);
+
+    static renderSettingMenu(editor, $footer) {
         let tpl = [
-            `<span class="dt-btn zoom-in">缩小</span>`,
-            `<span class="dt-btn zoom-zero">还原</span>`,
-            `<span class="dt-btn zoom-out">放大</span>`,
-            `<span class="dt-btn settings">设置</span>`,
+            '<ul class="dt-menu" tabindex="-1">',
+                '<li class="dt-sidebar-box" data-key=sidebar><div><input type="checkbox" class="dt-chk"/>显示侧边栏</div></li>',
+                '<li class="dt-grid-box" data-key="gird"><div><input type="checkbox" class="dt-chk"/>显示网格</div></li>',
+                '<li class="dt-tip-box" data-key="tips"><div><input type="checkbox" class="dt-chk"/>显示小提示</div></li>',
+                '<li class="dt-divider"></li>',
+                '<li class="dt-import" data-key="import"><div>导入数据</div></li>',
+                '<li class="dt-export" data-key="export"><div>导出数据</div></li>',
+            '</ul>'
         ].join('');
+        let $menu = $footer.append(tpl).find('.dt-menu').menu({
+            select(e, ui) {
+                console.log(ui.item.data('key'));
+                switch (ui.item.data('key')) {
+                    case 'import': {
+                        // TODO - 导入数据
+                        break;
+                    }
+                    case 'export': {
+                        // TODO - 导出数据
+                        break;
+                    }
+                }
+            },
+        });
+    }
+
+    static renderFooter(editor) {
+        let $footer = editor.$workspace.find('.dt-footer');
+        let tpl = [
+            '<span class="dt-btn zoom-in"><i class="dt-icon icon-minus" title="缩小"></i></span>',
+            '<span class="dt-btn zoom-zero"><i class="dt-icon icon-circle-empty" title="还原"></i></span>',
+            '<span class="dt-btn zoom-out"><i class="dt-icon icon-plus" title="放大"></i></span>',
+            '<span class="dt-btn settings"><i class="dt-icon icon-menu" title="设置"></i></span>',
+        ].join('');
+        ViewUtil.renderSettingMenu(editor, $footer);
         $footer.append(tpl)
-            .on('click.zoomIn', '.dt-btn.zoom-in', function () {
-                // TODO - scale in
+            .on('click.scaleIn', '.dt-btn.zoom-in', function () {
                 let originalFactor = editor.getScaleFactor();
                 ViewUtil.zoom(editor, parseFloat((originalFactor - Constant.SVG_SCALE_STEP).toFixed(1)));
                 return false;
             })
             .on('click.scaleZero', '.dt-btn.zoom-zero', function () {
-                // TODO - scale zero
                 ViewUtil.zoom(editor, 1);
                 return false;
             })
             .on('click.scaleIn', '.dt-btn.zoom-out', function () {
-                // TODO - scale out
                 let originalFactor = editor.getScaleFactor();
                 ViewUtil.zoom(editor, parseFloat((originalFactor + Constant.SVG_SCALE_STEP).toFixed(1)));
                 return false;
+            })
+            .on('click.settings', '.dt-btn.settings', function () {
+                let $menu = $footer.find('.dt-menu');
+                if ($menu.is(':visible')) {
+                    $menu.fadeOut();
+                } else {
+                    $menu.fadeIn();
+                }
+                return false;
             });
     }
-    static zoom(editor, factor){
+
+    static zoom(editor, factor) {
         window.requestAnimationFrame(function () {
             editor.setScaleFactor(factor);
             factor = editor.getScaleFactor();

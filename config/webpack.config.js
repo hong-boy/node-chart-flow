@@ -32,7 +32,7 @@ module.exports = {
                     loader: 'less-loader'
                 }
             ]},
-            {test: /\.(jpg|png)$/, use: ['file-loader']}
+            {test: /\.(jpg|png|svg|eot|ttf|woff|woff2)$/, use: ['file-loader']}
         ]
     },
     devServer: {

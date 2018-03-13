@@ -182,12 +182,12 @@ class Editor extends Events {
         return this.___def.CopyedNodes;
     }
 
-    setScaleFactor(factor){
+    setScaleFactor(factor) {
         // 最大为2倍，最小为0.4倍
         this.___def.scaleFactor = Math.max(Math.min(factor, 2), 0.4);
     }
 
-    getScaleFactor(){
+    getScaleFactor() {
         // 获取当前缩放等级
         return this.___def.scaleFactor;
     }
