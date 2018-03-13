@@ -29,6 +29,7 @@ export default {
     SVG_PALLETE_FACTOR_Y: 11, // 节点被拖放到dt-canvas上时y轴总是有11px的误差
     SVG_LINE_FACTOR_NODE_WIDTH: 100,
     SVG_LINE_FACTOR_NODE_HEIGHT: 30,
+    SVG_SCALE_STEP: 0.2, // 控制缩放的步长
     KEY_CODE_DELETE: 46,
     KEY_CODE_ENTER: 13,
     KEY_CODE_MOUSE_LEFT: 0, // 鼠标左键

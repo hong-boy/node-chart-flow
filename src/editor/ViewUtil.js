@@ -176,10 +176,10 @@ class ViewUtil {
     static transform(node4svg, x, y) {
         window.requestAnimationFrame(function () {
             node4svg.attr('transform', `translate(${parseInt(x)}, ${parseInt(y)})`);
-        })
+        });
     }
 
-    static judgeNodeIntersectOnLine(x, y, editor){
+    static judgeNodeIntersectOnLine(x, y, editor) {
         // 判断dt-pallete中拖出的节点是否与dt-line相交
         // dt-pallete中节点的大小固定为：120 x 30
         const PALLETE_NODE_WIDTH = 120;
@@ -187,13 +187,13 @@ class ViewUtil {
         const PALLETE_CLIP_WIDTH = 30;
         // 定义clip矩形
         let clip = {
-            x: x+((PALLETE_NODE_WIDTH - PALLETE_CLIP_WIDTH) / 2),
+            x: x + ((PALLETE_NODE_WIDTH - PALLETE_CLIP_WIDTH) / 2),
             y,
             w: PALLETE_CLIP_WIDTH,
-            h: PALLETE_NODE_HEIGHT
+            h: PALLETE_NODE_HEIGHT,
         };
         let legalLine = [];
-        editor.getRelations().forEach(item=>{
+        editor.getRelations().forEach((item) => {
             let line = item.line;
             let lineSVG = line.node();
             // 获取连线的总长度
@@ -201,28 +201,28 @@ class ViewUtil {
             // 从连线上抽取一定数量的坐标点作为样本
             // 判断有多少样本落在clip矩形内
             let sample = [];
-            for(let i = 0; i<len; i+=10){
+            for (let i = 0; i < len; i += 10) {
                 let p = lineSVG.getPointAtLength(i);
-                if(ViewUtil.isPointInRect(p, clip)){
+                if (ViewUtil.isPointInRect(p, clip)) {
                     sample.push(p);
                 }
             }
-            if(sample.length){
+            if (sample.length) {
                 legalLine.push(item);
             }
         });
         return legalLine;
     }
 
-    static isPointInRect(point, rect){
+    static isPointInRect(point, rect) {
         // 判断点是否落在矩形内
         return (
-            (point.x >= rect.x && point.x <= (rect.x + rect.w) )
-            && (point.y >= rect.y && point.y <= (rect.y + rect.h) )
+            (point.x >= rect.x && point.x <= (rect.x + rect.w)) &&
+            (point.y >= rect.y && point.y <= (rect.y + rect.h))
         );
     }
 
-    static clearLineSplice(editor){
+    static clearLineSplice(editor) {
         // 清除line-splice样式
         editor.getSVG().selectAll(`.${Constant.SVG_DT_LINE}.${Constant.SVG_LINE_SPLICE}`)
             .classed(`${Constant.SVG_LINE_SPLICE}`, false);
@@ -238,18 +238,20 @@ class ViewUtil {
             // 支持在两个节点中间拖拽添加 line_splice
             window.requestAnimationFrame(function () {
                 let nc = ui.helper.data(Constant.PALETTE_NODE_CONFIG);
-                if(nc.inputs.enable && nc.outputs.enable){
+                if (nc.inputs.enable && nc.outputs.enable) {
                     // 若当前节点同时支持输入和输出，则开启此效果
-                    let factor = Constant.SVG_PALLETE_FACTOR_Y; // y轴总是有11px的误差 (待观察)- TODO
                     let offset = ui.offset;
                     let $canvas = editor.$canvas;
                     let offset4thiz = $canvas.offset();
-                    let y = $canvas.scrollTop() + offset.top - offset4thiz.top + factor;
+                    let y = $canvas.scrollTop() + offset.top - offset4thiz.top + Constant.SVG_PALLETE_FACTOR_Y;
                     let x = $canvas.scrollLeft() + offset.left - offset4thiz.left;
                     ViewUtil.clearLineSplice(editor);
                     ui.helper.data(Constant.TAG_LINE_SPLICE, null);
+                    let factor = editor.getScaleFactor();
+                    x = x / factor;
+                    y = y / factor;
                     let lineArr = ViewUtil.judgeNodeIntersectOnLine(x, y, editor);
-                    if(lineArr.length){
+                    if (lineArr.length) {
                         // 默认取出第一条连线
                         let item = lineArr[0];
                         let line = item.line;
@@ -261,16 +263,19 @@ class ViewUtil {
             });
         };
         let drop = function (e, ui) {
-            let factor = Constant.SVG_PALLETE_FACTOR_Y; // y轴总是有11px的误差 (待观察)- TODO
             let offset = ui.offset;
             let offset4thiz = $(this).offset();
             let $canvas = editor.$canvas;
-            let y = $canvas.scrollTop() + offset.top - offset4thiz.top + factor;
+            let y = $canvas.scrollTop() + offset.top - offset4thiz.top + Constant.SVG_PALLETE_FACTOR_Y;
             let x = $canvas.scrollLeft() + offset.left - offset4thiz.left;
             let nodeTypeId = ui.helper.data(Constant.PALETTE_NODE_CONFIG)['nodeTypeId'];
             let RealNodeType = editor.getNodeTypes().get(nodeTypeId);
             let nodeId = uuid();
             let nodeTypeConfig = new RealNodeType();
+            // 根据缩放比例调整节点坐标（仅限于拖拽节点到画布上时）
+            let factor = editor.getScaleFactor();
+            x = x / factor;
+            y = y / factor;
             nodeTypeConfig.x = x;
             nodeTypeConfig.y = y;
             nodeTypeConfig.nodeId = nodeId;
@@ -278,7 +283,7 @@ class ViewUtil {
             ViewUtil.clearLineSplice(editor);
             let lineSpliceItem = ui.helper.data(Constant.TAG_LINE_SPLICE);
             // 判断是否是line-splice
-            if(lineSpliceItem){
+            if (lineSpliceItem) {
                 ViewUtil.deleteLine(lineSpliceItem.line, editor);
                 ViewUtil.drawLine(lineSpliceItem.from, newNode, editor);
                 ViewUtil.drawLine(newNode, lineSpliceItem.to, editor);
@@ -290,7 +295,7 @@ class ViewUtil {
             revert: 'invalid',
             containment: editor.$el,
             start,
-            drag
+            drag,
         });
         editor.$canvas.droppable({
             accept: '.node-tpl',
@@ -519,6 +524,9 @@ class ViewUtil {
             let mousemove = function () {
                 // 更新fakeLine
                 let mousePos = d3.mouse(this);
+                let factor = editor.getScaleFactor();
+                mousePos[0] = mousePos[0] / factor;
+                mousePos[1] = mousePos[1] / factor;
                 let pathData = ViewUtil._generateLinePath(
                     ViewUtil._genPos4FromNode(node4svg),
                     { x: mousePos[0], y: mousePos[1], });
@@ -657,7 +665,7 @@ class ViewUtil {
                 case Constant.KEY_CODE_DELETE: {
                     editor.getSVG().selectAll(`.${Constant.SVG_DT_NODE}.selected`)
                         .nodes()
-                        .forEach(item=>{
+                        .forEach((item) => {
                             ViewUtil.deleteNode(d3.select(item), editor);
                         });
                     break;
@@ -701,7 +709,7 @@ class ViewUtil {
         return relation;
     }
 
-    static cloneNode(sourceNode, editor){
+    static cloneNode(sourceNode, editor) {
         // 克隆节点（深克隆）
         // TODO - 考虑config.prop属性被双向绑定的情况
         let settings = editor.config.settings;
@@ -732,7 +740,7 @@ class ViewUtil {
     }
 
     static _fixNodePos(editor, node) {
-        // 根据节点最新宽度调整节点坐标
+        // 根据节点最新缩放比例和宽度调整节点坐标
         if (ViewUtil.isOverstepBoundary(editor, node)) {
             let datum = node.datum();
             let rect = ViewUtil._getNodeSizeRealTime(node);
@@ -858,11 +866,11 @@ class ViewUtil {
             .attr('fill', Constant.SVG_BG_COLOR);
         bg.on('mousedown', mousedown);
         bg.on('keyup', keyup);
-        bg.on('keydown', function(){
+        bg.on('keydown', function() {
             // TODO - 绑定 ctrl + C(V) 事件
-            if(d3.event.ctrlKey){
+            if (d3.event.ctrlKey) {
                 let svg = editor.getSVG();
-                switch (d3.event.keyCode){
+                switch (d3.event.keyCode) {
                     case Constant.KEY_CODE_ALPHA_C: {
                         // ctrl + c
                         let copyedNodes = svg.selectAll(`.${Constant.SVG_DT_NODE}.selected`).nodes();
@@ -877,7 +885,7 @@ class ViewUtil {
                         ViewUtil.clearSelectedOnCanvas(editor);
                         let map = new Map();
                         // 复制节点
-                        copyedNodes.forEach(item=>{
+                        copyedNodes.forEach((item) => {
                             let srcNode = d3.select(item);
                             let clonedNode = ViewUtil.cloneNode(srcNode, editor);
                             clonedNode.classed('selected', true);
@@ -886,18 +894,18 @@ class ViewUtil {
                         // 复制连线关系
                         let set = new Set();
                         // 过滤出要复制的连线
-                        editor.getRelations().forEach(lineItem=>{
-                            if(copyedNodes.indexOf(lineItem.from) && copyedNodes.indexOf(lineItem.to)){
+                        editor.getRelations().forEach((lineItem) => {
+                            if (copyedNodes.indexOf(lineItem.from) && copyedNodes.indexOf(lineItem.to)) {
                                 set.add(lineItem);
                             }
                         });
                         // 确定from和to节点
-                        set.forEach(lineItem=>{
+                        set.forEach((lineItem) => {
                             let fromId = lineItem.from.datum().nodeId;
                             let toId = lineItem.to.datum().nodeId;
                             let clonedFromNode = map.get(fromId);
                             let clonedToNode = map.get(toId);
-                            if(clonedFromNode && clonedToNode){
+                            if (clonedFromNode && clonedToNode) {
                                 ViewUtil.drawLine(clonedFromNode, clonedToNode, editor);
                             }
                         });
@@ -905,7 +913,7 @@ class ViewUtil {
                     }
                 }
             }
-        })
+        });
     }
 
     static clearSelectedOnCanvas(editor) {
@@ -1022,6 +1030,45 @@ class ViewUtil {
         g4canvas.append('svg:g').classed(Constant.SVG_DT_LINE_GROUP, true);
         g4canvas.append('svg:g').classed(Constant.SVG_DT_NODE_GROUP, true);
         // TODO - 渲染dt-footer
+        ViewUtil.renderFooter(editor);
+    }
+    static renderFooter(editor){
+        let $footer = editor.$workspace.find(`.dt-footer`);
+        let tpl = [
+            `<span class="dt-btn zoom-in">缩小</span>`,
+            `<span class="dt-btn zoom-zero">还原</span>`,
+            `<span class="dt-btn zoom-out">放大</span>`,
+            `<span class="dt-btn settings">设置</span>`,
+        ].join('');
+        $footer.append(tpl)
+            .on('click.zoomIn', '.dt-btn.zoom-in', function () {
+                // TODO - scale in
+                let originalFactor = editor.getScaleFactor();
+                ViewUtil.zoom(editor, parseFloat((originalFactor - Constant.SVG_SCALE_STEP).toFixed(1)));
+                return false;
+            })
+            .on('click.scaleZero', '.dt-btn.zoom-zero', function () {
+                // TODO - scale zero
+                ViewUtil.zoom(editor, 1);
+                return false;
+            })
+            .on('click.scaleIn', '.dt-btn.zoom-out', function () {
+                // TODO - scale out
+                let originalFactor = editor.getScaleFactor();
+                ViewUtil.zoom(editor, parseFloat((originalFactor + Constant.SVG_SCALE_STEP).toFixed(1)));
+                return false;
+            });
+    }
+    static zoom(editor, factor){
+        window.requestAnimationFrame(function () {
+            editor.setScaleFactor(factor);
+            factor = editor.getScaleFactor();
+            let svg = editor.getSVG();
+            let size = editor.config.settings.size * factor;
+            svg.attr('width', size).attr('height', size);
+            svg.select(`.${Constant.SVG_INNER_CANVAS}`).attr('transform', `scale(${factor})`);
+
+        });
     }
 }
 

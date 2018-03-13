@@ -54,6 +54,7 @@ class Editor extends Events {
             NodeTypes: new Map(), // 节点类型模板类
             Relations: new Map(), // 节点连线
             CopyedNodes: new Set(), // 被复制的节点
+            scaleFactor: 1, // 缩放因子
         };
     }
 
@@ -173,12 +174,22 @@ class Editor extends Events {
         return this.___def.Relations;
     }
 
-    _setCopyedNodes(nodes){
+    _setCopyedNodes(nodes) {
         this.___def.CopyedNodes = new Set(nodes);
     }
 
-    getCopyedNodes(){
+    getCopyedNodes() {
         return this.___def.CopyedNodes;
+    }
+
+    setScaleFactor(factor){
+        // 最大为2倍，最小为0.4倍
+        this.___def.scaleFactor = Math.max(Math.min(factor, 2), 0.4);
+    }
+
+    getScaleFactor(){
+        // 获取当前缩放等级
+        return this.___def.scaleFactor;
     }
 }
 

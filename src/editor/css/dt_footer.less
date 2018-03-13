@@ -1,0 +1,21 @@
+@import "mixin";
+
+.dt-footer {
+    width: 100%;
+    height: @dtFooterHeight;
+    padding: 0 15px;
+    box-sizing: border-box;
+    .flexlayout(flex, row, center, flex-end);
+    border-top: 1px solid #bbb;
+    border-bottom: 1px solid #bbb;
+    background: #f3f3f3;
+    .dt-btn {
+        font-size: 12px;
+        margin: 0 5px;
+        cursor: pointer;
+        color: #00B8FE;
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
