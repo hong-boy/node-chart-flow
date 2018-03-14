@@ -2,11 +2,15 @@
     <div class="dt-editor">
         <div class="dt-palette"></div>
         <div class="dt-workspace">
-            <div class="dt-canvas"></div>
-            <footer class="dt-footer">
-            </footer>
+            <div class="dt-canvas scrollbar-dynamic" v-bar></div>
+            <footer class="dt-footer"></footer>
         </div>
-        <div class="dt-helper">helper</div>
+        <div class="divider-line"></div>
+        <div class="dt-side-bar">
+            <div class="dt-prop-box">prop box</div>
+            <div class="divider-horizonal"></div>
+            <div class="dt-tip-box">tip box</div>
+        </div>
     </div>
 </template>
 

@@ -46,7 +46,9 @@ class Editor extends Events {
         this.$el = $(el);
         this.$palette = this.$el.find('.dt-palette');
         this.$workspace = this.$el.find('.dt-workspace');
-        this.$canvas = this.$workspace.find('.dt-canvas').attr('id', Constant.CANVAS_ID);
+        this.$divider = this.$el.find('.divider-line');
+        this.$sidebar = this.$el.find('.dt-side-bar');
+        this.$canvas = this.$workspace.find('.dt-canvas .dt-canvas').attr('id', Constant.CANVAS_ID);
         // this.$helper = this.$el.find('.dt-helper');
         this.___svg = null; // 存放d3生成的svg实例
         this.___def = {
@@ -96,16 +98,8 @@ class Editor extends Events {
 
     }
 
-    showPropDialog() {
-
-    }
-
-    hidePropDialog() {
-
-    }
-
-    zoom() {
-
+    zoom(factor) {
+        util.zoom(this, factor);
     }
 
     registerCatagory(cata) {
@@ -150,6 +144,11 @@ class Editor extends Events {
 
     getSVG() {
         return this.___svg;
+    }
+
+    checkCircular(){
+        // TODO 判断图中是否有环
+
     }
 
     _setRelation(from, to, line, id) {

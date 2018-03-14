@@ -14,7 +14,9 @@ class NodeType {
         // 节点类型
         this.nodeTypeId = config.nodeTypeId;
         // 连接到当前节点的节点：array类型，形如：[nid, nid2]
-        this.wires = config.wires || [];
+        this.prev = config.prev||[];
+        // 由当前节点链接到的节点：array类型，形如：[nid, nid2]
+        this.next = config.next || [];
         // 节点输入端口
         this.inputs = Object.assign({
             enable: true, // 是否允许有数据源输入

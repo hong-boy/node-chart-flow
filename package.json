@@ -71,7 +71,8 @@
     "jquery": "^3.3.1",
     "jquery-ui": "^1.12.1",
     "lodash.merge": "^4.6.1",
-    "uuid": "^3.2.1"
+    "uuid": "^3.2.1",
+    "vue-scrollbars": "^1.0.5"
   },
   "browserslist": [
     "defaults",

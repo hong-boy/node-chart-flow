@@ -16249,6 +16249,11 @@
         }
       }
     },
+    "vue-scrollbars": {
+      "version": "1.0.5",
+      "resolved": "https://registry.npmjs.org/vue-scrollbars/-/vue-scrollbars-1.0.5.tgz",
+      "integrity": "sha512-qlRftD56uHaXddmrYCEbVJRDJj5FlxnptHw8xvX67CSc/WyRbP6GkRSBl0+Y69ZNpb4tzeh/WbP3KEdcMljLng=="
+    },
     "vue-style-loader": {
       "version": "4.0.2",
       "resolved": "https://registry.npmjs.org/vue-style-loader/-/vue-style-loader-4.0.2.tgz",

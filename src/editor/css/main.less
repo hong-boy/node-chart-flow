@@ -2,19 +2,19 @@
 
 .dt-editor {
     position: relative;
+    .flexlayout(inline-flex, row, start, flex-start);
     box-sizing: border-box;
     height: 100%;
     width: 100%;
     font-size: @baseFontSize;
-    font-family: system-ui;
+    font-family: "Microsoft YaHei", system-ui;
     color: @baseFontColor;
-    .flexlayout(flex, row, start, flex-start);
     .hide {
         display: none !important;
     }
     @import "palette";
     @import "workspace";
     @import "dt_footer";
-    @import "panel_helper";
+    @import "dt_side_bar";
     @import "override_accordion";
 }

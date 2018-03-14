@@ -1,6 +1,7 @@
 'use strict';
 
 export default {
+    PREFIX_OF_UUID: 'dt', // querySelector使用ID选择器时，选择器不能以数字开头
     PREFIX_OF_CATAGORY: 'cata_',
     CANVAS_ID: 'dt_canvas',
     PALETTE_NODE_CONFIG: 'palette-config', // 访问缓存在.dt-palette面板中的.node-tpl节点上配置信息
@@ -36,7 +37,11 @@ export default {
     KEY_CODE_MOUSE_RIGHT: 2, // 鼠标右键
     KEY_CODE_ALPHA_C: 67,
     KEY_CODE_ALPHA_V: 86,
+    KEY_CODE_ALPHA_A: 65,
+    EVENT_ADDED_LINE: 'added-line', // 添加连线后触发的事件
+    EVENT_ADDED_NODE: 'added-node', // 添加节点后触发的事件
     EVENT_DELETED_LINE: 'deleted-line', // 连线被删除后触发的事件
     EVENT_DELETED_NODE: 'deleted-node', // 节点被删除后触发的事件
+    EVENT_CLICKED_NODE: 'clicked-node', // 节点单击事件
 
 };

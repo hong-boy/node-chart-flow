@@ -3,14 +3,14 @@
 .dt-workspace {
     @color4selected: @borderColorHighlight;
     position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: start;
-    justify-content: flex-start;
+    .flexlayout(inline-flex, column, start, flex-start);
     flex-grow: 1;
     height: 100%;
     width: 100%;
-    background:#77d176;
+    margin-right: @dividerLineWidth - 1;
+    background: #f3f3f3;
+    //border-right: 1px solid #bbb;
+    box-sizing: border-box;
     overflow: auto;
     z-index: 0;
     .lasso {
@@ -25,8 +25,8 @@
         position: relative;
         left: 0;
         top: 0;
-        width: 100%;
-        height: ~"calc(100% - @{dtFooterHeight})";
+        max-width: 100% !important;
+        //max-height: ~"calc(100% - @{dtFooterHeight})" !important;
         background: #CDDC39;
         overflow: auto;
     }

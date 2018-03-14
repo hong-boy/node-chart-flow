@@ -1,0 +1,81 @@
+@import "mixin";
+
+@tipBoxHeight: 150px;
+.dt-side-bar {
+    position: relative;
+    .flexlayout(inline-flex, column, flex-start, flex-start);
+    min-width: @sidebarWidth;
+    height: 100%;
+    z-index: 1;
+    background: #f3f3f3;
+    border: 1px solid #bbb;
+    border-left: none;
+    box-sizing: border-box;
+    overflow: hidden;
+    .dt-prop-box {
+        width: 100%;
+        flex-grow: 1;
+        background:#d15a6f;
+    }
+    .dt-tip-box {
+        width: 100%;
+        height: @tipBoxHeight;
+        background:#386391;
+    }
+}
+
+.divider-line {
+    position: absolute;
+    top: 0px;
+    right: @sidebarWidth;
+    width: @dividerLineWidth;
+    z-index: 11;
+    cursor: col-resize;
+    background: #f3f3f3;
+    height: 100%;
+    border: 1px solid #bbb;
+    box-sizing: border-box;
+    &.ui-draggable-dragging {
+        border: 1px dashed #bbb;
+        opacity: .5;
+    }
+    &:before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        height: 70px;
+        width: 4px;
+        transform: translateX(-50%) translateY(-50%);
+        background: #ccc;
+    }
+}
+
+.divider-horizonal {
+    @dividerHeight: @dividerLineWidth;
+    position: absolute;
+    bottom: @tipBoxHeight;
+    left: 0;
+    width: 100%;
+    height: @dividerHeight - 2;
+    z-index: 11;
+    cursor: row-resize;
+    background: #f3f3f3;
+    border-top: 1px solid #bbb;
+    border-bottom: 1px solid #bbb;
+    box-sizing: border-box;
+    &.ui-draggable-dragging {
+        border: 1px dashed #bbb;
+        opacity: .5;
+    }
+    &:before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 70px;
+        height: 2px;
+        transform: translateX(-50%) translateY(-50%);
+        background: #ccc;
+    }
+}
