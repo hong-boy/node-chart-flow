@@ -9,7 +9,7 @@
         <div class="dt-side-bar">
             <div class="dt-prop-box">prop box</div>
             <div class="divider-horizonal"></div>
-            <div class="dt-tip-box">tip box</div>
+            <div class="dt-tip-box scrollbar-dynamic" v-bar></div>
         </div>
     </div>
 </template>
@@ -20,17 +20,41 @@
     export default {
         name: 'NodeChartFlow',
         props: {
+            data: {type:Array, default: []},
             registerNodeType: {type: Function},
+            readonly: {type: Boolean, default:false}, // readonly只有在初始化的时候传入才有效
+            showTips: {type: Boolean, default:true},
+            intervalTips: {type: Number, default: 3000},
+            size: {type: Number, default: 5000},
+            showGrid: {type: Boolean, default:true},
+            gapGrid: {type: Number, default:20},
+            strokeColorGrid: {type: String, default:'#eee'},
         },
         created(){
             let thiz = this;
-            let config = {};
+            let config = {
+                readonly: thiz.readonly,
+                data: thiz.data,
+                settings: {
+                    size: thiz.size,
+                    tips: {
+                        enable: thiz.showTips,
+                        interval: thiz.intervalTips
+                    },
+                    grid: {
+                        enable: thiz.showGrid,
+                        gap: thiz.gapGrid,
+                        strokeColor: thiz.strokeColorGrid,
+                    },
+                }
+            };
             thiz.$nextTick(function () {
                 thiz.editor = new Editor(thiz.$el, config);
+                window.editor = thiz.editor;
                 thiz.$emit('registerNodeType', thiz.editor);
                 thiz.editor.init();
                 thiz.editor.on('deleted-line', function (...args) {
-                    console.log(args)
+                    console.log(args);
                 });
             })
         },

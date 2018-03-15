@@ -5,11 +5,10 @@
     position: relative;
     .flexlayout(inline-flex, column, flex-start, flex-start);
     min-width: @sidebarWidth;
+    width: @sidebarWidth;
     height: 100%;
     z-index: 1;
     background: #f3f3f3;
-    border: 1px solid #bbb;
-    border-left: none;
     box-sizing: border-box;
     overflow: hidden;
     .dt-prop-box {
@@ -20,7 +19,21 @@
     .dt-tip-box {
         width: 100%;
         height: @tipBoxHeight;
-        background:#386391;
+        background:#fff;
+        .flexlayout(flex, column, stretch, stretch);
+        font-size: 14px;
+        line-height: 2;
+        &.scroll-content {
+            padding: 10px;
+        }
+    }
+    .help-key {
+        border: 1px solid #ddd;
+        padding: 4px;
+        border-radius: 3px;
+        background: #f6f6f6;
+        font-family: Courier, monospace;
+        box-shadow: #999 1px 1px 1px;
     }
 }
 

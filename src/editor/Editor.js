@@ -9,27 +9,21 @@ import Events from 'events';
  * 默认编辑器配置
  */
 const DEFAULT_CONFIG = {
-    isReadonlyMode: false, // 是否启用只读模式（不允许拖动节点、删除节点、删除连线）
+    readonly: false, // 是否启用只读模式（不允许拖动节点、删除节点、删除连线）
     // 节点实例
     data: [],
     settings: {
         size: 5000,
-        showHelpDialog: true,
+        tips: {
+            enable: true, // 是否启用tips功能
+            interval: 3000, // tip显示间隔
+        },
         grid: {
             enable: true,
             gap: 20,
             strokeColor: '#eee',
         },
     },
-};
-
-// 属性对话框事件
-const PROP_DIALOG_EVENTS = {
-    ON_READY: 'on-ready', // 属性对话框显示后触发的事件
-    ON_DELETE: 'on-delete', // 属性对话框点击删除按钮
-    ON_CANCEL: 'on-cancel', // 属性对话框点击取消按钮
-    ON_SAVE: 'on-save', // 属性对话框点击保存按钮
-    ON_RESIZE: 'on-resize', // 属性对话框尺寸调整
 };
 
 
@@ -43,13 +37,14 @@ class Editor extends Events {
         super();
         this._debug = true; // 用于打印关键信息方便调试
         this.config = $.extend(true, {}, DEFAULT_CONFIG, config);
+
         this.$el = $(el);
         this.$palette = this.$el.find('.dt-palette');
         this.$workspace = this.$el.find('.dt-workspace');
         this.$divider = this.$el.find('.divider-line');
         this.$sidebar = this.$el.find('.dt-side-bar');
         this.$canvas = this.$workspace.find('.dt-canvas .dt-canvas').attr('id', Constant.CANVAS_ID);
-        // this.$helper = this.$el.find('.dt-helper');
+
         this.___svg = null; // 存放d3生成的svg实例
         this.___def = {
             NodeCatagory: new Set(), // 节点类别
@@ -57,6 +52,7 @@ class Editor extends Events {
             Relations: new Map(), // 节点连线
             CopyedNodes: new Set(), // 被复制的节点
             scaleFactor: 1, // 缩放因子
+            tips: new Set(), // 存放说明描述信息(支持html格式)
         };
     }
 
@@ -67,11 +63,18 @@ class Editor extends Events {
         if (!thiz.getNodeTypes().size) {
             throw Error('请先注册节点类型：registerNodeType()');
         }
+        thiz.log(config);
+        thiz.log(thiz.getNodeTypes());
+        config.readonly && thiz.$el.addClass('is-readonly');
         // 绘制dt-palette
         util.renderPalette(thiz);
         // 绘制dt-workspace
         util.renderWorkspace(thiz);
-
+        // 渲染divider-horizional
+        util.renderDividerHorizonal(thiz);
+        util.renderTipBox(thiz);
+        // 绘制节点
+        thiz.importData(config.data, false, false);
     }
 
     update() {
@@ -82,28 +85,49 @@ class Editor extends Events {
 
     }
 
+    /**
+     * 导出全部节点（深克隆）
+     * @return {Array}
+     */
     exportData() {
-
+        let list = util.exportData(this);
+        this.log(list);
+        return list;
     }
 
-    importData() {
-
+    /**
+     * 导入
+     * @param{Array} list - 数据格式请参考exportData方法的返回值
+     * @param{Boolean} selected - 是否选中导入的节点
+     * @param{Boolean} fresh - 是否创建新的uuid
+     */
+    importData(list, selected = true, fresh = true) {
+        util.importData(list, this, selected, fresh);
     }
 
-    fullScreen() {
-
+    /**
+     * 是否是只读模式
+     * PS： 只读模式下，无法对画布节点进行拖拽、删除、新增，只能触发click操作
+     */
+    isReadonly() {
+        return this.config.readonly;
     }
 
-    restoreScreen() {
-
-    }
-
+    /**
+     * 缩放
+     * @param{Number} factor - 取值区间[0.4, 2]
+     */
     zoom(factor) {
         util.zoom(this, factor);
     }
 
+    /**
+     * 注册节点类别
+     * PS：节点类别是指dt-pallete面板所对应的区域
+     * 默认值：{id:defaults, label:Defaults}
+     * @param cata
+     */
     registerCatagory(cata) {
-        // 注册节点类别
         let catagory = this.getNodeCatagory();
         catagory.add({
             id: cata.id,
@@ -111,12 +135,21 @@ class Editor extends Events {
         });
     }
 
+    /**
+     * 注册节点类型
+     * @param{Function} func
+     * PS：func函数会传入NodeType类作为参数，用户必须继承该类
+     */
     registerNodeType(func) {
         // 注册节点类型模板
         let RealNodeType = func.call(null, NodeType);
         this.___def.NodeTypes.set(RealNodeType.id(), RealNodeType);
     }
 
+    /**
+     * 获取节点类别
+     * @return {Set}
+     */
     getNodeCatagory() {
         // 返回注册的节点类别
         let set = this.___def.NodeCatagory;
@@ -127,26 +160,47 @@ class Editor extends Events {
         return set;
     }
 
+    /**
+     * 根据节点类型ID获取节点类型模板类
+     * @param id
+     */
+    getNodeTypeById(id) {
+        return this.getNodeTypes().get(id);
+    }
+
+    /**
+     * 获取节点类型模板类
+     * @return {Map}
+     */
     getNodeTypes() {
         // 返回已注册的节点类型
         return this.___def.NodeTypes;
     }
 
+    /**
+     * 打印日志（内部使用）
+     * @param msg
+     */
     log(...msg) {
-        if (this._debug) {
-            console.log(msg);
-        }
+        this._debug && console.log(msg);
     }
 
     _setSVG(svg) {
         this.___svg = svg;
     }
 
+    /**
+     * 获取当前svg元素
+     * @return {null|*}
+     */
     getSVG() {
         return this.___svg;
     }
 
-    checkCircular(){
+    /**
+     * 检测是否存在环
+     */
+    checkCircular() {
         // TODO 判断图中是否有环
 
     }
@@ -177,18 +231,40 @@ class Editor extends Events {
         this.___def.CopyedNodes = new Set(nodes);
     }
 
+    /**
+     * 获取当前被复制的节点
+     * @return {Set}
+     */
     getCopyedNodes() {
         return this.___def.CopyedNodes;
     }
 
+    /**
+     * 设置缩放等级
+     * @param{Number} factor - 取值范围[0.4, 2]
+     */
     setScaleFactor(factor) {
-        // 最大为2倍，最小为0.4倍
         this.___def.scaleFactor = Math.max(Math.min(factor, 2), 0.4);
     }
 
+    /**
+     * 获取缩放等级
+     * @return {number}
+     */
     getScaleFactor() {
-        // 获取当前缩放等级
         return this.___def.scaleFactor;
+    }
+
+    /**
+     * 添加提示信息
+     * @param tip
+     */
+    setTip(tip) {
+        this.___def.tips.add(`<p class="dt-tip">${tip}</p>`);
+    }
+
+    getTips() {
+        return this.___def.tips;
     }
 }
 

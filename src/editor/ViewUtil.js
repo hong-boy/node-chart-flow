@@ -172,7 +172,7 @@ class ViewUtil {
             collapsible: false,
         });
         // 绑定拖拽事件
-        ViewUtil.dragAndDrop4Palette(editor);
+        !editor.isReadonly() && ViewUtil.dragAndDrop4Palette(editor);
     }
 
     static transform(node4svg, x, y) {
@@ -353,7 +353,7 @@ class ViewUtil {
         return function () {
             if (!inst4drag) {
                 let start = function (d) {
-                    if(d3.event.sourceEvent.ctrlKey || d3.event.sourceEvent.shiftKey){
+                    if (d3.event.sourceEvent.ctrlKey || d3.event.sourceEvent.shiftKey) {
                         // 若用户按下了ctrl或者shift，则不响应
                         return;
                     }
@@ -368,7 +368,7 @@ class ViewUtil {
                     d.selectedNodes = selectedNodes;
                 };
                 let drag = function (d) {
-                    if(d3.event.sourceEvent.ctrlKey || d3.event.sourceEvent.shiftKey){
+                    if (d3.event.sourceEvent.ctrlKey || d3.event.sourceEvent.shiftKey) {
                         // 若用户按下了ctrl或者shift，则不响应
                         return;
                     }
@@ -420,7 +420,7 @@ class ViewUtil {
                     ViewUtil.updateAllLinePath(editor);
                 };
                 let end = function (d) {
-                    if(d3.event.sourceEvent.ctrlKey || d3.event.sourceEvent.shiftKey){
+                    if (d3.event.sourceEvent.ctrlKey || d3.event.sourceEvent.shiftKey) {
                         // 若用户按下了ctrl或者shift，则不响应
                         return;
                     }
@@ -565,8 +565,7 @@ class ViewUtil {
                 let fromId = node4svg.attr('id');
                 if (!toNode ||
                     toNode.attr('id') === fromId ||
-                    !toNode.datum().inputs.enable ||
-                    ViewUtil.hasRelation(editor, fromNode, toNode)) {
+                    !toNode.datum().inputs.enable) {
                     // 移除监听器
                     svg.on('.port', null);
                     d3.event.stopPropagation();
@@ -608,6 +607,15 @@ class ViewUtil {
 
     static drawLine(from, to, editor) {
         // 绘制两个节点之间的连线
+        if (ViewUtil.hasRelation(editor, from, to, true)) {
+            editor.log(`节点[${from.datum().nodeId}]和节点[${to.datum().nodeId}]之间已经建立了关系！`);
+            return;
+        }
+        if (!to.datum().validate(from, to, editor)) {
+            editor.log(`节点[${from.datum().nodeId}]和节点[${to.datum().nodeId}]之间创建关系失败！`);
+            editor.emit(Constant.EVENT_VALIDATE_FAILED, from, to);
+            return;
+        }
         let svg = editor.getSVG();
         let lineGroups = svg.select(`.${Constant.SVG_DT_LINE_GROUP}`);
         let g = lineGroups.append('svg:g')
@@ -674,9 +682,9 @@ class ViewUtil {
         g.remove();
     }
 
-    static traverseNode(node, editor, res=new Set(), direction=0){
+    static traverseNode(node, editor, res = new Set(), direction = 0) {
         // 遍历出与给定节点有关系的全部节点
-        //direction=0 双向遍历 direction=-1 只遍历prev direction=1 只遍历next
+        // direction=0 双向遍历 direction=-1 只遍历prev direction=1 只遍历next
         let prev = node.datum().prev;
         let next = node.datum().next;
         const BI_DIRECTION = 0;
@@ -685,14 +693,14 @@ class ViewUtil {
 
         res.add(node.datum().nodeId);
 
-        (direction === BI_DIRECTION || direction === PREV_DIRECTION) && prev.forEach(nid=>{
-            if(!res.has(nid)){
+        (direction === BI_DIRECTION || direction === PREV_DIRECTION) && prev.forEach((nid) => {
+            if (!res.has(nid)) {
                 let temp = ViewUtil.traverseNode(d3.select(`#${nid}`), editor, res, 0);
                 res = new Set([...res, ...temp, nid]);
             }
         });
-        (direction === BI_DIRECTION || direction === NEXT_DIRECTION) && next.forEach(nid=>{
-            if(!res.has(nid)){
+        (direction === BI_DIRECTION || direction === NEXT_DIRECTION) && next.forEach((nid) => {
+            if (!res.has(nid)) {
                 let temp = ViewUtil.traverseNode(d3.select(`#${nid}`), editor, res, 0);
                 res = new Set([...res, ...temp, nid]);
             }
@@ -703,7 +711,7 @@ class ViewUtil {
 
     static _bindEventOnNode(editor, node4svg) {
         // 给节点.port > .node-port绑定mouseenter事件
-        ViewUtil._bindEventOnNodePort(editor, node4svg);
+        !editor.isReadonly() && ViewUtil._bindEventOnNodePort(editor, node4svg);
         let mouseleave = function () {
             d3.select(this).classed('hovered', false);
         };
@@ -712,19 +720,19 @@ class ViewUtil {
         };
         let clicked = function () {
             let thiz = d3.select(this);
-            if(d3.event.shiftKey){
+            if (d3.event.shiftKey) {
                 // 若是shift + click，则选中整条路径上的节点
                 let nodeIds = ViewUtil.traverseNode(thiz, editor);
-                nodeIds.forEach(nid=>{
+                nodeIds.forEach((nid) => {
                     d3.select(`#${nid}`).classed('selected', true);
                 });
-            }else if(d3.event.ctrlKey){
+            } else if (d3.event.ctrlKey) {
                 // 若是ctrl + click，则选中/取消选中该节点
                 let isSelected = thiz.classed('selected');
                 thiz.classed('selected', !isSelected);
             } else {
                 // TODO - 触发节点单击事件
-                editor.emit(Constant.EVENT_CLICKED_NODE, {node: thiz});
+                editor.emit(Constant.EVENT_CLICKED_NODE, { node: thiz, });
             }
 
             d3.event.stopPropagation();
@@ -734,7 +742,7 @@ class ViewUtil {
         node4svg.on('mouseleave', mouseleave);
         node4svg.on('mouseenter', mouseenter);
         node4svg.on('click', clicked);
-        node4svg.on('keyup', function () {
+        !editor.isReadonly() && node4svg.on('keyup', function () {
             switch (d3.event.keyCode) {
                 case Constant.KEY_CODE_DELETE: {
                     editor.getSVG().selectAll(`.${Constant.SVG_DT_NODE}.selected`)
@@ -759,7 +767,7 @@ class ViewUtil {
             }
         });
         node.remove();
-        editor.emit(Constant.EVENT_DELETED_NODE, { datum });
+        editor.emit(Constant.EVENT_DELETED_NODE, { datum, });
     }
 
     static hasRelation(editor, from, to, reverse = false) {
@@ -806,10 +814,10 @@ class ViewUtil {
         ViewUtil._fixNodePos(editor, node4svg);
         ViewUtil.transform(node4svg, config.x, config.y);
         // 给节点绑定拖拽事件
-        node4svg.call(ViewUtil._dragNodeOnCanvas(editor)());
+        !editor.isReadonly() && node4svg.call(ViewUtil._dragNodeOnCanvas(editor)());
         // 给node节点绑定事件
         ViewUtil._bindEventOnNode(editor, node4svg);
-        editor.emit(Constant.EVENT_ADDED_NODE, {node: node4svg});
+        editor.emit(Constant.EVENT_ADDED_NODE, { node: node4svg, });
         return node4svg;
     }
 
@@ -938,63 +946,66 @@ class ViewUtil {
             .attr('width', settings.size)
             .attr('height', settings.size)
             .attr('fill', Constant.SVG_BG_COLOR);
-        bg.on('mousedown', mousedown);
-        bg.on('keyup', keyup);
-        bg.on('keydown', function() {
-            // 绑定 ctrl + C/V/A 事件
-            if (d3.event.ctrlKey) {
-                let svg = editor.getSVG();
-                switch (d3.event.keyCode) {
-                    case Constant.KEY_CODE_ALPHA_C: {
-                        // ctrl + c
-                        let copyedNodes = svg.selectAll(`.${Constant.SVG_DT_NODE}.selected`).nodes();
-                        editor._setCopyedNodes(copyedNodes);
-                        console.log('复制了 ', copyedNodes.length, ' 个节点');
-                        break;
+        if (!editor.isReadonly()) {
+            // 若不是只读模式，则绑定事件
+            bg.on('mousedown', mousedown);
+            bg.on('keyup', keyup);
+            bg.on('keydown', function () {
+                // 绑定 ctrl + C/V/A 事件
+                if (d3.event.ctrlKey) {
+                    let svg = editor.getSVG();
+                    switch (d3.event.keyCode) {
+                        case Constant.KEY_CODE_ALPHA_C: {
+                            // ctrl + c
+                            let copyedNodes = svg.selectAll(`.${Constant.SVG_DT_NODE}.selected`).nodes();
+                            editor._setCopyedNodes(copyedNodes);
+                            console.log('复制了 ', copyedNodes.length, ' 个节点');
+                            break;
+                        }
+                        case Constant.KEY_CODE_ALPHA_V: {
+                            // ctrl + v
+                            let copyedNodes = Array.from(editor.getCopyedNodes());
+                            console.log('粘贴了 ', copyedNodes.length, ' 个节点');
+                            ViewUtil.clearSelectedOnCanvas(editor);
+                            let map = new Map();
+                            // 复制节点
+                            copyedNodes.forEach((item) => {
+                                let srcNode = d3.select(item);
+                                let clonedNode = ViewUtil.cloneNode(srcNode, editor);
+                                clonedNode.classed('selected', true);
+                                map.set(srcNode.datum().nodeId, clonedNode);
+                            });
+                            // 复制连线关系
+                            let set = new Set();
+                            // 过滤出要复制的连线
+                            editor.getRelations().forEach((lineItem) => {
+                                if (copyedNodes.indexOf(lineItem.from) && copyedNodes.indexOf(lineItem.to)) {
+                                    set.add(lineItem);
+                                }
+                            });
+                            // 确定from和to节点
+                            set.forEach((lineItem) => {
+                                let fromId = lineItem.from.datum().nodeId;
+                                let toId = lineItem.to.datum().nodeId;
+                                let clonedFromNode = map.get(fromId);
+                                let clonedToNode = map.get(toId);
+                                if (clonedFromNode && clonedToNode) {
+                                    ViewUtil.drawLine(clonedFromNode, clonedToNode, editor);
+                                }
+                            });
+                            break;
+                        }
+                        case Constant.KEY_CODE_ALPHA_A: {
+                            // ctrl + A
+                            editor.getSVG().selectAll(`.${Constant.SVG_DT_NODE}`).classed('selected', true);
+                            break;
+                        }
                     }
-                    case Constant.KEY_CODE_ALPHA_V: {
-                        // ctrl + v
-                        let copyedNodes = Array.from(editor.getCopyedNodes());
-                        console.log('粘贴了 ', copyedNodes.length, ' 个节点');
-                        ViewUtil.clearSelectedOnCanvas(editor);
-                        let map = new Map();
-                        // 复制节点
-                        copyedNodes.forEach((item) => {
-                            let srcNode = d3.select(item);
-                            let clonedNode = ViewUtil.cloneNode(srcNode, editor);
-                            clonedNode.classed('selected', true);
-                            map.set(srcNode.datum().nodeId, clonedNode);
-                        });
-                        // 复制连线关系
-                        let set = new Set();
-                        // 过滤出要复制的连线
-                        editor.getRelations().forEach((lineItem) => {
-                            if (copyedNodes.indexOf(lineItem.from) && copyedNodes.indexOf(lineItem.to)) {
-                                set.add(lineItem);
-                            }
-                        });
-                        // 确定from和to节点
-                        set.forEach((lineItem) => {
-                            let fromId = lineItem.from.datum().nodeId;
-                            let toId = lineItem.to.datum().nodeId;
-                            let clonedFromNode = map.get(fromId);
-                            let clonedToNode = map.get(toId);
-                            if (clonedFromNode && clonedToNode) {
-                                ViewUtil.drawLine(clonedFromNode, clonedToNode, editor);
-                            }
-                        });
-                        break;
-                    }
-                    case Constant.KEY_CODE_ALPHA_A: {
-                        // ctrl + A
-                        editor.getSVG().selectAll(`.${Constant.SVG_DT_NODE}`).classed('selected', true);
-                        break;
-                    }
+                    d3.event.stopPropagation();
+                    d3.event.preventDefault();
                 }
-                d3.event.stopPropagation();
-                d3.event.preventDefault();
-            }
-        });
+            });
+        }
     }
 
     static clearSelectedOnCanvas(editor) {
@@ -1114,13 +1125,55 @@ class ViewUtil {
         ViewUtil.renderFooter(editor);
         // 渲染divider-line
         ViewUtil.renderDividerLine(editor);
-        // 渲染divider-horizional
-        ViewUtil.renderDividerHorizonal(editor);
     }
 
-    static renderDividerHorizonal(editor){
+    static renderTipBox(editor) {
+        // 初始化dt-tip-box
+        let $tipBox = editor.$sidebar.find('.dt-tip-box.scroll-content');
+        let tipSetting = editor.config.settings.tips;
+        if (!tipSetting.enable) {
+            $tipBox.parent().hide();
+            return;
+        }
+        editor.getTips().clear();
+        Constant.DESC_LIST.forEach((tip) => {
+            editor.setTip(tip);
+        });
+        editor.getNodeTypes().forEach((RealNodeType) => {
+            let tip = RealNodeType.tip();
+            (tip && tip.length) && editor.setTip(tip);
+        });
+        let tips = editor.getTips().keys();
+        function carousel() {
+            let tip = tips.next();
+            if (tip.done) {
+                // 重置
+                tips = editor.getTips().keys();
+                tip = tips.next();
+                console.log('done');
+            }
+            let $tip = $(tip.value).hide();
+            let $original = $tipBox.find('.dt-tip');
+            if ($original.length) {
+                $original.fadeOut(function () {
+                    $original.remove();
+                    $tip.appendTo($tipBox).fadeIn();
+                });
+            } else {
+                $tip.appendTo($tipBox).fadeIn();
+            }
+        }
+        carousel();
+        setInterval(carousel, tipSetting.interval);
+    }
+
+    static renderDividerHorizonal(editor) {
         // 渲染divider-horizional
         let $divider = editor.$sidebar.find('.divider-horizonal');
+        if (!editor.config.settings.tips.enable) {
+            $divider.hide();
+            return;
+        }
         let start = function (e, ui) {
         };
         let drag = function (e, ui) {
@@ -1134,17 +1187,17 @@ class ViewUtil {
                 let distance = original.top - pos.top;
                 let minHeight = parseInt($tipbox.css('height')) + distance;
                 console.log(pos, original, distance, minHeight, $tipbox);
-                if(minHeight < 80){
+                if (minHeight < 80) {
                     minHeight = 0;
-                }else if(minHeight > 400){
+                } else if (minHeight > 400) {
                     minHeight = 400;
                 }
                 $tipbox.css({
-                    height: minHeight
+                    height: minHeight,
                 });
                 $thiz.css({
                     'top': 'auto',
-                    bottom: minHeight
+                    bottom: minHeight,
                 });
             });
         };
@@ -1153,11 +1206,11 @@ class ViewUtil {
             containment: editor.$sidebar,
             start,
             drag,
-            stop
+            stop,
         });
     }
 
-    static renderDividerLine(editor){
+    static renderDividerLine(editor) {
         // 渲染divider-line
         let $divider = editor.$divider;
         let stop = function (e, ui) {
@@ -1167,25 +1220,25 @@ class ViewUtil {
                 let original = ui.originalPosition;
                 let distance = original.left - pos.left;
                 let minWidth = parseInt(editor.$sidebar.css('min-width')) + distance;
-                if(minWidth < 80){
+                if (minWidth < 80) {
                     minWidth = 0;
-                }else if(minWidth > 800){
+                } else if (minWidth > 800) {
                     minWidth = 800;
                 }
                 editor.$sidebar.css({
                     'min-width': minWidth,
-                    width: minWidth
+                    width: minWidth,
                 });
                 $thiz.css({
                     'left': 'auto',
-                    right: minWidth
+                    right: minWidth,
                 });
             });
         };
         $divider.draggable({
             helper: 'clone',
             containment: editor.$el,
-            stop
+            stop,
         });
     }
 
@@ -1267,6 +1320,53 @@ class ViewUtil {
             svg.attr('width', size).attr('height', size);
             svg.select(`.${Constant.SVG_INNER_CANVAS}`).attr('transform', `scale(${factor})`);
 
+        });
+    }
+
+    static exportData(editor) {
+        // 导出数据
+        let list = editor.getSVG().selectAll(`.${Constant.SVG_DT_NODE}`).nodes();
+        return list.map((node) => {
+            let { x, y, nodeId, nodeTypeId, prev, next, label, props, } = d3.select(node).datum();
+            let RealNodeType = editor.getNodeTypeById(nodeTypeId);
+            return $.extend(true, new RealNodeType(), { x, y, nodeId, prev, next, label, props, });
+        });
+    }
+
+    static importData(list, editor, selected = true, fresh = true) {
+        // 导入数据（将导入的节点作为新节点对待）
+        let map = new Map();
+        // 先绘制节点
+        list.forEach((item) => {
+            let { x, y, nodeId, nodeTypeId, prev, next, label, props, } = item;
+            let RealNodeType = editor.getNodeTypeById(nodeTypeId);
+            let originalNodeId = nodeId;
+            // 将新节点的nodeId、prev和next指针重置
+            let nc = $.extend(
+                true,
+                new RealNodeType(),
+                { x, y, nodeId, label, props, },
+                fresh ? { nodeId: ViewUtil.uuid(), prev: [], next: [], } : { prev, next, }
+            );
+            let newNode = ViewUtil._drawNodeOnCanvas(nc, editor);
+            if (selected) {
+                ViewUtil.clearSelectedOnCanvas(editor);
+                newNode.classed('selected', true);
+            }
+            map.set(originalNodeId, newNode);
+        });
+        // 再绘制链接
+        list.forEach((item) => {
+            let next = item.next;
+            let prev = item.prev;
+            let oid = item.nodeId;
+            let currNode = map.get(oid);
+            next.forEach((nid) => {
+                ViewUtil.drawLine(currNode, map.get(nid), editor);
+            });
+            prev.forEach((nid) => {
+                ViewUtil.drawLine(map.get(nid), currNode, editor);
+            });
         });
     }
 }

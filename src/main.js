@@ -4,7 +4,7 @@ import * as d3 from 'd3';
 import Vue from 'vue';
 import VueScrollbars from 'vue-scrollbars';
 import 'normalize.css';
-import "vue-scrollbars/dist/bundle.css"
+import 'vue-scrollbars/dist/bundle.css';
 import './editor/css/fontello/css/fontello.css';
 import Editor from './editor/Component.vue';
 import Layout from './layout.vue';
