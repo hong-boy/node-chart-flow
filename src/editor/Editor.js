@@ -73,8 +73,10 @@ class Editor extends Events {
         // 渲染divider-horizional
         util.renderDividerHorizonal(thiz);
         util.renderTipBox(thiz);
-        // 绘制节点
-        thiz.importData(config.data, false, false);
+        setTimeout(function () {
+            // 绘制节点
+            thiz.importData(config.data, false, false);
+        }, 10);
     }
 
     update() {
@@ -268,4 +270,4 @@ class Editor extends Events {
     }
 }
 
-export default Editor;
+export { NodeType, Editor as default, };

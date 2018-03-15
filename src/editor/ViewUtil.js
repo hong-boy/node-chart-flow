@@ -793,9 +793,10 @@ class ViewUtil {
     static cloneNode(sourceNode, editor) {
         // 克隆节点（深克隆）
         // TODO - 考虑config.prop属性被双向绑定的情况
-        let settings = editor.config.settings;
         let srcDatum = sourceNode.datum();
-        let clonedDatum = $.extend(true, {}, srcDatum);
+        let RealNodeType = editor.getNodeTypeById(srcDatum.nodeTypeId);
+        let { x, y, prev, next, label, props, } = srcDatum;
+        let clonedDatum = $.extend(true, new RealNodeType(), { x, y, prev, next, label, props, });
         clonedDatum.nodeId = ViewUtil.uuid();
         // 节点坐标适当偏移
         clonedDatum.x += 5;
@@ -959,13 +960,13 @@ class ViewUtil {
                             // ctrl + c
                             let copyedNodes = svg.selectAll(`.${Constant.SVG_DT_NODE}.selected`).nodes();
                             editor._setCopyedNodes(copyedNodes);
-                            console.log('复制了 ', copyedNodes.length, ' 个节点');
+                            editor.log(`复制了 ${copyedNodes.length} 个节点`);
                             break;
                         }
                         case Constant.KEY_CODE_ALPHA_V: {
                             // ctrl + v
                             let copyedNodes = Array.from(editor.getCopyedNodes());
-                            console.log('粘贴了 ', copyedNodes.length, ' 个节点');
+                            editor.log(`粘贴了 ${copyedNodes.length} 个节点`);
                             ViewUtil.clearSelectedOnCanvas(editor);
                             let map = new Map();
                             // 复制节点
@@ -1150,7 +1151,7 @@ class ViewUtil {
                 // 重置
                 tips = editor.getTips().keys();
                 tip = tips.next();
-                console.log('done');
+                editor.log('done');
             }
             let $tip = $(tip.value).hide();
             let $original = $tipBox.find('.dt-tip');
@@ -1186,7 +1187,6 @@ class ViewUtil {
                 let original = ui.originalPosition;
                 let distance = original.top - pos.top;
                 let minHeight = parseInt($tipbox.css('height')) + distance;
-                console.log(pos, original, distance, minHeight, $tipbox);
                 if (minHeight < 80) {
                     minHeight = 0;
                 } else if (minHeight > 400) {
@@ -1245,35 +1245,41 @@ class ViewUtil {
     static renderSettingMenu(editor, $footer) {
         let tpl = [
             '<ul class="dt-menu" tabindex="-1">',
-                '<li class="dt-sidebar-box" data-key=sidebar><div><input type="checkbox" class="dt-chk"/>显示侧边栏</div></li>',
-                '<li class="dt-grid-box" data-key="gird"><div><input type="checkbox" class="dt-chk"/>显示网格</div></li>',
-                '<li class="dt-tip-box" data-key="tips"><div><input type="checkbox" class="dt-chk"/>显示小提示</div></li>',
+                '<li class="dt-sidebar-box" data-key=sidebar>' +
+                '<div><input type="checkbox" class="dt-chk"/>显示侧边栏</div></li>',
+                '<li class="dt-grid-box" data-key="gird">' +
+                '<div><input type="checkbox" class="dt-chk"/>显示网格</div></li>',
+                '<li class="dt-tip-box" data-key="tips">' +
+                '<div><input type="checkbox" class="dt-chk"/>显示小提示</div></li>',
                 '<li class="dt-divider"></li>',
                 '<li class="dt-import" data-key="import"><div>导入数据</div></li>',
                 '<li class="dt-export" data-key="export"><div>导出数据</div></li>',
             '</ul>'
         ].join('');
-        let $menu = $footer.append(tpl).find('.dt-menu').menu({
-            select(e, ui) {
-                console.log(ui.item.data('key'));
-                switch (ui.item.data('key')) {
-                    case 'import': {
-                        // TODO - 导入数据
-                        break;
-                    }
-                    case 'export': {
-                        // TODO - 导出数据
-                        break;
-                    }
-                    case 'gird': {
-                        // TODO - 显示网格
-                        let isChked = ui.item.find('.dt-chk').prop('checked');
-                        console.log(isChked);
-                        break;
-                    }
-                }
-            },
-        });
+        // let $menu = $footer.append(tpl).find('.dt-menu').menu({
+        //     select(e, ui) {
+        //         switch (ui.item.data('key')) {
+        //             case 'import': {
+        //                 // TODO - 导入数据
+        //                 break;
+        //             }
+        //             case 'export': {
+        //                 // TODO - 导出数据
+        //                 break;
+        //             }
+        //             case 'gird': {
+        //                 // 显示网格
+        //                 let $chk = ui.item.find('.dt-chk');
+        //                 let isChked = $chk.prop('checked');
+        //                 if (isChked) {
+        //                 } else {
+        //                 }
+        //                 $chk.prop('checked', !isChked);
+        //                 break;
+        //             }
+        //         }
+        //     },
+        // });
     }
 
     static renderFooter(editor) {
@@ -1282,9 +1288,9 @@ class ViewUtil {
             '<span class="dt-btn zoom-in"><i class="dt-icon icon-minus" title="缩小"></i></span>',
             '<span class="dt-btn zoom-zero"><i class="dt-icon icon-circle-empty" title="还原"></i></span>',
             '<span class="dt-btn zoom-out"><i class="dt-icon icon-plus" title="放大"></i></span>',
-            '<span class="dt-btn settings"><i class="dt-icon icon-menu" title="设置"></i></span>',
+            // '<span class="dt-btn settings"><i class="dt-icon icon-menu" title="设置"></i></span>',
         ].join('');
-        ViewUtil.renderSettingMenu(editor, $footer);
+        // ViewUtil.renderSettingMenu(editor, $footer);
         $footer.append(tpl)
             .on('click.scaleIn', '.dt-btn.zoom-in', function () {
                 let originalFactor = editor.getScaleFactor();
@@ -1299,16 +1305,16 @@ class ViewUtil {
                 let originalFactor = editor.getScaleFactor();
                 ViewUtil.zoom(editor, parseFloat((originalFactor + Constant.SVG_SCALE_STEP).toFixed(1)));
                 return false;
-            })
-            .on('click.settings', '.dt-btn.settings', function () {
-                let $menu = $footer.find('.dt-menu');
-                if ($menu.is(':visible')) {
-                    $menu.fadeOut();
-                } else {
-                    $menu.fadeIn();
-                }
-                return false;
             });
+            // .on('click.settings', '.dt-btn.settings', function () {
+            //     let $menu = $footer.find('.dt-menu');
+            //     if ($menu.is(':visible')) {
+            //         $menu.fadeOut();
+            //     } else {
+            //         $menu.fadeIn();
+            //     }
+            //     return false;
+            // });
     }
 
     static zoom(editor, factor) {

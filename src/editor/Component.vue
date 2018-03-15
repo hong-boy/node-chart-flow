@@ -7,7 +7,7 @@
         </div>
         <div class="divider-line"></div>
         <div class="dt-side-bar">
-            <div class="dt-prop-box">prop box</div>
+            <div class="dt-prop-box scrollbar-dynamic" v-bar></div>
             <div class="divider-horizonal"></div>
             <div class="dt-tip-box scrollbar-dynamic" v-bar></div>
         </div>
@@ -50,11 +50,23 @@
             };
             thiz.$nextTick(function () {
                 thiz.editor = new Editor(thiz.$el, config);
-                window.editor = thiz.editor;
+                // window.editor = thiz.editor;
                 thiz.$emit('registerNodeType', thiz.editor);
                 thiz.editor.init();
+                thiz.editor.on('added-line', function (...args) {
+                    thiz.$emit('addedLine', args)
+                });
                 thiz.editor.on('deleted-line', function (...args) {
-                    console.log(args);
+                    thiz.$emit('deletedLine', args)
+                });
+                thiz.editor.on('deleted-node', function (...args) {
+                    thiz.$emit('deletedNode', args)
+                });
+                thiz.editor.on('added-node', function (args) {
+                    thiz.$emit('addedNode', args)
+                });
+                thiz.editor.on('clicked-node', function (...args) {
+                    thiz.$emit('clickedNode', args)
                 });
             })
         },

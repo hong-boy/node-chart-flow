@@ -25,6 +25,16 @@
       "integrity": "sha512-ONhaKPIufzzrlNbqtWFFd+jlnemX6lJAgq9ZeiZtS7I1PIf/la7CW4m83rTXRnVnsMbW2k56pGYu7AUFJD9Pow==",
       "dev": true
     },
+    "JSONStream": {
+      "version": "1.3.2",
+      "resolved": "https://registry.npmjs.org/JSONStream/-/JSONStream-1.3.2.tgz",
+      "integrity": "sha1-wQI3G27Dp887hHygDCC7D85Mbeo=",
+      "dev": true,
+      "requires": {
+        "jsonparse": "1.3.1",
+        "through": "2.3.8"
+      }
+    },
     "accepts": {
       "version": "1.3.3",
       "resolved": "https://registry.npmjs.org/accepts/-/accepts-1.3.3.tgz",
@@ -3383,8 +3393,8 @@
       "integrity": "sha512-jaAP61py+ISMF3/n3yIiIuY5h6mJlucOqawu5mLB1HaQADLvg/y5UB3pT7HSucZJan34lp7+7ylQPfbKEGmxrA==",
       "dev": true,
       "requires": {
-        "is-text-path": "1.0.1",
         "JSONStream": "1.3.2",
+        "is-text-path": "1.0.1",
         "lodash": "4.17.5",
         "meow": "4.0.0",
         "split2": "2.2.0",
@@ -7927,16 +7937,6 @@
       "resolved": "https://registry.npmjs.org/jsonparse/-/jsonparse-1.3.1.tgz",
       "integrity": "sha1-P02uSpH6wxX3EGL4UhzCOfE2YoA=",
       "dev": true
-    },
-    "JSONStream": {
-      "version": "1.3.2",
-      "resolved": "https://registry.npmjs.org/JSONStream/-/JSONStream-1.3.2.tgz",
-      "integrity": "sha1-wQI3G27Dp887hHygDCC7D85Mbeo=",
-      "dev": true,
-      "requires": {
-        "jsonparse": "1.3.1",
-        "through": "2.3.8"
-      }
     },
     "jsprim": {
       "version": "1.4.1",
@@ -14557,15 +14557,6 @@
       "integrity": "sha1-J5siXfHVgrH1TmWt3UNS4Y+qBxM=",
       "dev": true
     },
-    "string_decoder": {
-      "version": "1.0.3",
-      "resolved": "https://registry.npmjs.org/string_decoder/-/string_decoder-1.0.3.tgz",
-      "integrity": "sha512-4AH6Z5fzNNBcH+6XDMfA/BTt87skxqJlO0lAh3Dker5zThcAxG6mKz+iGu308UKoPPQ8Dcqx/4JhujzltRa+hQ==",
-      "dev": true,
-      "requires": {
-        "safe-buffer": "5.1.1"
-      }
-    },
     "string-template": {
       "version": "0.2.1",
       "resolved": "https://registry.npmjs.org/string-template/-/string-template-0.2.1.tgz",
@@ -14597,6 +14588,15 @@
             "ansi-regex": "3.0.0"
           }
         }
+      }
+    },
+    "string_decoder": {
+      "version": "1.0.3",
+      "resolved": "https://registry.npmjs.org/string_decoder/-/string_decoder-1.0.3.tgz",
+      "integrity": "sha512-4AH6Z5fzNNBcH+6XDMfA/BTt87skxqJlO0lAh3Dker5zThcAxG6mKz+iGu308UKoPPQ8Dcqx/4JhujzltRa+hQ==",
+      "dev": true,
+      "requires": {
+        "safe-buffer": "5.1.1"
       }
     },
     "stringify-entities": {

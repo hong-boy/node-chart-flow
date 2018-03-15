@@ -5,7 +5,12 @@
             :data="nodes"
             :showGrid="true"
             :readonly="false"
-            :showTips="false"></node-chart-flow>
+            @clickedNode="clickedNode"
+            @addedNode="addedNode"
+            @addedLine="addedLine"
+            @deletedNode="deletedNode"
+            @deletedLine="deletedLine"
+            :showTips="true"></node-chart-flow>
     </div>
 </template>
 
@@ -64,6 +69,13 @@
             };
         },
         methods: {
+            clickedNode(){},
+            addedNode({node}=args){
+                console.log('addedNode', node.datum());
+            },
+            addedLine(){},
+            deletedNode(){},
+            deletedLine(){},
             registerNodeType(editor){
                 // Source
                 editor.registerNodeType(function (NodeType) {
