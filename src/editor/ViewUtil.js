@@ -695,13 +695,13 @@ class ViewUtil {
 
         (direction === BI_DIRECTION || direction === PREV_DIRECTION) && prev.forEach((nid) => {
             if (!res.has(nid)) {
-                let temp = ViewUtil.traverseNode(d3.select(`#${nid}`), editor, res, 0);
+                let temp = ViewUtil.traverseNode(editor.getSVG().select(`#${nid}`), editor, res, 0);
                 res = new Set([...res, ...temp, nid]);
             }
         });
         (direction === BI_DIRECTION || direction === NEXT_DIRECTION) && next.forEach((nid) => {
             if (!res.has(nid)) {
-                let temp = ViewUtil.traverseNode(d3.select(`#${nid}`), editor, res, 0);
+                let temp = ViewUtil.traverseNode(editor.getSVG().select(`#${nid}`), editor, res, 0);
                 res = new Set([...res, ...temp, nid]);
             }
         });
@@ -724,7 +724,7 @@ class ViewUtil {
                 // 若是shift + click，则选中整条路径上的节点
                 let nodeIds = ViewUtil.traverseNode(thiz, editor);
                 nodeIds.forEach((nid) => {
-                    d3.select(`#${nid}`).classed('selected', true);
+                    editor.getSVG().select(`#${nid}`).classed('selected', true);
                 });
             } else if (d3.event.ctrlKey) {
                 // 若是ctrl + click，则选中/取消选中该节点
@@ -839,9 +839,9 @@ class ViewUtil {
         }
     }
 
-    static _drawSVGCanvas(settings) {
+    static _drawSVGCanvas(settings, editor) {
         // 绘制svg节点
-        let svg = d3.select(`#${Constant.CANVAS_ID}`)
+        let svg = d3.select(editor.$el.find(`#${Constant.CANVAS_ID}`).get(0))
             .append('svg:svg')
             .attr('height', settings.size)
             .attr('width', settings.size)
@@ -858,7 +858,7 @@ class ViewUtil {
         // 绘制rect节点作为背景画布
         let keyup = function () {
             if (d3.event.keyCode === Constant.KEY_CODE_DELETE) {
-                d3.selectAll(`.${Constant.SVG_DT_NODE}.selected`)
+                editor.getSVG().selectAll(`.${Constant.SVG_DT_NODE}.selected`)
                     .nodes()
                     .forEach((item) => {
                         ViewUtil.deleteNode(d3.select(item), editor);
@@ -1112,7 +1112,7 @@ class ViewUtil {
          </g>
          </svg> */
         // 绘制svg
-        let svg = ViewUtil._drawSVGCanvas(settings);
+        let svg = ViewUtil._drawSVGCanvas(settings, editor);
         editor._setSVG(svg);
         let g4canvas = svg.append('svg:g').attr('class', Constant.SVG_INNER_CANVAS);
         // 绘制rect背景

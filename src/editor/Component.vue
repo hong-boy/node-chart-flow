@@ -7,7 +7,9 @@
         </div>
         <div class="divider-line"></div>
         <div class="dt-side-bar">
-            <div class="dt-prop-box scrollbar-dynamic" v-bar></div>
+            <div class="dt-prop-box">
+                <component :is="compt.id" :node.sync="compt.node"></component>
+            </div>
             <div class="divider-horizonal"></div>
             <div class="dt-tip-box scrollbar-dynamic" v-bar></div>
         </div>
@@ -15,6 +17,7 @@
 </template>
 
 <script type="text/ecmascript-6">
+    import Vue from 'vue'
     import Editor from './Editor.js'
 
     export default {
@@ -52,6 +55,15 @@
                 thiz.editor = new Editor(thiz.$el, config);
                 // window.editor = thiz.editor;
                 thiz.$emit('registerNodeType', thiz.editor);
+                thiz.$nextTick(function () {
+                    // 注册组件
+                    thiz.editor.getNodeTypes().forEach((RealNodeType, id)=>{
+                        if(Object.prototype.toString.call(RealNodeType.component) === '[object Function]'){
+                            Vue.component(id, RealNodeType.component());
+                        }
+                    });
+                });
+
                 thiz.editor.init();
                 thiz.editor.on('added-line', function (...args) {
                     thiz.$emit('addedLine', args)
@@ -65,8 +77,12 @@
                 thiz.editor.on('added-node', function (args) {
                     thiz.$emit('addedNode', args)
                 });
-                thiz.editor.on('clicked-node', function (...args) {
-                    thiz.$emit('clickedNode', args)
+                thiz.editor.on('clicked-node', function ({node}=args) {
+                    let datum = node.datum();
+                    let nodeTypeId = datum.nodeTypeId;
+                    thiz.compt.id = nodeTypeId;
+                    thiz.compt.node = datum;
+                    thiz.$emit('clickedNode', node)
                 });
             })
         },
@@ -75,7 +91,11 @@
         },
         data(){
             return {
-                editor: {},
+                editor: null, // Editor实例
+                compt: { // 当前要显示的组件
+                    id: null,
+                    node: null
+                },
             };
         }
     }

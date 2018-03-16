@@ -1,0 +1,42 @@
+[{
+    "nodeId": "dt-67491d55-fda6-46d2-b023-7d1fddce3fe8",
+    "x": 131,
+    "y": 138,
+    "catagory": "defaults",
+    "nodeTypeId": "sourceNodeType",
+    "prev": [],
+    "next": ["dt-5ab061bb-887a-452e-aeb5-67834c794684"],
+    "inputs": {"enable": false},
+    "outputs": {"enable": true, "tip": "描述..."},
+    "color": "#A6BBCE",
+    "label": "source",
+    "icon": null,
+    "props": {}
+}, {
+    "nodeId": "dt-21f30704-dbd9-4aa3-a68d-f3af6c61b85f",
+    "x": 674,
+    "y": 248,
+    "catagory": "defaults",
+    "nodeTypeId": "alarmNodeType",
+    "prev": ["dt-5ab061bb-887a-452e-aeb5-67834c794684"],
+    "next": [],
+    "inputs": {"enable": true, "max": 1, "tip": "描述..."},
+    "outputs": {"enable": false},
+    "color": "#E59191",
+    "label": "alarmNode",
+    "icon": "33f3b78b520aed951835baa59bad0ceb.png",
+    "props": {}
+}, {
+    "nodeId": "dt-5ab061bb-887a-452e-aeb5-67834c794684",
+    "x": 379,
+    "y": 192,
+    "catagory": "defaults",
+    "nodeTypeId": "transformNodeType",
+    "prev": ["dt-67491d55-fda6-46d2-b023-7d1fddce3fe8"],
+    "next": ["dt-21f30704-dbd9-4aa3-a68d-f3af6c61b85f"],
+    "inputs": {"enable": true, "max": 1, "tip": "描述..."},
+    "outputs": {"enable": true, "max": 1, "tip": "描述..."},
+    "color": "rgb(176, 223, 227)",
+    "icon": null,
+    "props": {}
+}]

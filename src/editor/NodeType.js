@@ -61,6 +61,13 @@ class NodeType {
         // 节点信息描述
         return null;
     }
+
+    /**
+     * 返回节点所对应的组件
+     */
+    static component(){
+        throw '必须重写static component()方法'
+    }
 }
 
 export default NodeType;
