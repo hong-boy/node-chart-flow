@@ -2,7 +2,7 @@
 import $ from 'jquery';
 import * as d3 from 'd3';
 import Vue from 'vue';
-import ElementUI from 'element-ui'
+import ElementUI from 'element-ui';
 import VueScrollbars from 'vue-scrollbars';
 import 'normalize.css';
 import 'vue-scrollbars/dist/bundle.css';

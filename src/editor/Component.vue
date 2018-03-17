@@ -99,7 +99,6 @@
                     thiz.$emit('addedNode', args)
                 });
                 thiz.editor.on('pasted-node', function ({pastedNodes}=args) {
-                    console.log(pastedNodes.map(node=>node.datum()));
                     thiz.$emit('pastedNode', pastedNodes)
                 });
                 thiz.editor.on('clicked-node', function ({node}=args) {

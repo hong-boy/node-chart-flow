@@ -1,32 +1,38 @@
-import {NodeType} from '../editor/Editor'
+import { NodeType } from '../editor/Editor';
 
 const NODE_DESC = require('./node_desc.json');
 
 /**
  * 告警
  */
-class AlarmNodeType extends  NodeType {
-    static id(){
-        return 'alarmNodeType'
+class AlarmNodeType extends NodeType {
+    static id() {
+        return 'alarmNodeType';
     }
-    static component(){
-        return resolve=>require(['./AlarmNodeType.vue'], resolve);
+
+    static component() {
+        return (resolve) => {
+ return require(['./AlarmNodeType.vue'], resolve);
+};
     }
-    static tip(){
+
+    static tip() {
         return NODE_DESC.ALARM;
     }
-    validate(from, to, editor){
+
+    validate(from, to, editor) {
         let flag = true;
-        editor.getRelations().forEach(lineItem=>{
+        editor.getRelations().forEach((lineItem) => {
             console.log(lineItem.to, to, lineItem.to === to);
-            if(lineItem.to.node() === to.node()){
+            if (lineItem.to.node() === to.node()) {
                 // 只允许有一个输入
                 flag = false;
             }
         });
         return flag;
     }
-    constructor(){
+
+    constructor() {
         super();
         this.props = {};
         this.nodeTypeId = AlarmNodeType.id();
@@ -36,7 +42,7 @@ class AlarmNodeType extends  NodeType {
         this.inputs = {
             enable: true,
             max: 1,
-            tip: '描述...'
+            tip: '描述...',
         };
         this.outputs = {
             enable: false,

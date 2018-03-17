@@ -2,7 +2,7 @@
 import $ from 'jquery';
 import NodeType from './NodeType.js';
 import util from './ViewUtil.js';
-import SaveSVGAsPNG from 'save-svg-as-png'
+import SaveSVGAsPNG from 'save-svg-as-png';
 import Constant from './Constant.js';
 import Events from 'events';
 
@@ -81,7 +81,7 @@ class Editor extends Events {
         util.renderTipBox(thiz);
         setTimeout(function () {
             // 绘制节点
-            config.data.map(node=>{
+            config.data.map((node) => {
                 node.isChanged = false;
                 node.isErrored = false;
                 return node;
@@ -104,17 +104,17 @@ class Editor extends Events {
     /**
      * 生成当前画布截图
      */
-    screenshot(){
+    screenshot() {
         let thiz = this;
-        return new Promise((resolve, reject)=>{
+        return new Promise((resolve, reject) => {
             let settings = thiz.config.settings;
             let $svg = thiz.$canvas.find('svg').clone();
             $svg.find('g.dt-c-grid').remove();
             let width = parseInt($svg.attr('width'));
             let scale = width / settings.size;
-            SaveSVGAsPNG.svgAsPngUri($svg.get(0), {scale}, function (uri) {
+            SaveSVGAsPNG.svgAsPngUri($svg.get(0), { scale, }, function (uri) {
                 resolve(uri);
-            })
+            });
         });
     }
 

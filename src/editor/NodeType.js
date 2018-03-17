@@ -69,8 +69,8 @@ class NodeType {
     /**
      * 返回节点所对应的组件
      */
-    static component(){
-        throw '必须重写static component()方法'
+    static component() {
+        throw '必须重写static component()方法';
     }
 }
 

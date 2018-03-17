@@ -6,16 +6,14 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const rootdir = path.join(__dirname, '../');
 
 module.exports = {
+    mode: 'production',
     entry: {
-        "bundle": [path.join(rootdir, 'src/build.js')],
-        "bundle.browser": ['babel-polyfill', path.join(rootdir, 'src/build.js')],
+        "bundle": [path.join(rootdir, 'src/build.js')]
     },
     output: {
         path: path.join(rootdir, 'dist/'),
         publicPath: '',
         filename: '[name].js',
-        library: "Vuescrollbars",
-        libraryTarget: "umd"
     },
     module: {
         rules: [
@@ -25,10 +23,18 @@ module.exports = {
                 test: /\.(css|less)$/,
                 use: ExtractTextPlugin.extract({
                     fallback: "style-loader",
-                    use: "css-loader"
+                    use: [
+                        "css-loader",
+                        {
+                            loader: 'postcss-loader'
+                        },
+                        {
+                            loader: 'less-loader'
+                        }
+                    ]
                 })
             },
-            {test: /\.(jpg|png)$/, use: ['file-loader']}
+            {test: /\.(jpg|png|svg|eot|ttf|woff|woff2)$/, use: ['file-loader']}
         ]
     },
     plugins: [

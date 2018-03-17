@@ -1,26 +1,31 @@
-import {NodeType} from '../editor/Editor'
+import { NodeType } from '../editor/Editor';
 
 /**
  * 数据转换
  */
-class TransformNodeType extends  NodeType {
-    static id(){
-        return 'transformNodeType'
+class TransformNodeType extends NodeType {
+    static id() {
+        return 'transformNodeType';
     }
-    static component(){
-        return resolve=>require(['./TransformNodeType.vue'], resolve);
+
+    static component() {
+        return (resolve) => {
+ return require(['./TransformNodeType.vue'], resolve);
+};
     }
-    validate(from, to, editor){
+
+    validate(from, to, editor) {
         let flag = true;
-        editor.getRelations().forEach(lineItem=>{
-            if(lineItem.to.node() === to.node()){
+        editor.getRelations().forEach((lineItem) => {
+            if (lineItem.to.node() === to.node()) {
                 // 只允许有一个输入
                 flag = false;
             }
         });
         return flag;
     }
-    constructor(){
+
+    constructor() {
         super();
         this.icon = null;
         this.props = {};
@@ -31,11 +36,11 @@ class TransformNodeType extends  NodeType {
         };
         this.inputs = {
             enable: true,
-            tip: '描述...'
+            tip: '描述...',
         };
         this.outputs = {
             enable: true,
-            tip: '描述...'
+            tip: '描述...',
         };
     }
 }

@@ -1,32 +1,37 @@
-import {NodeType} from '../editor/Editor'
+import { NodeType } from '../editor/Editor';
 
 /**
  * 开始节点
  */
-class SourceNodeType extends  NodeType {
-    static id(){
+class SourceNodeType extends NodeType {
+    static id() {
         return 'sourceNodeType';
     }
-    static component(){
-        return resolve=>require(['./SourceNodeType.vue'], resolve);
+
+    static component() {
+        return (resolve) => {
+ return require(['./SourceNodeType.vue'], resolve);
+};
     }
-    validate(from, to, editor){
+
+    validate(from, to, editor) {
         return true;
     }
-    constructor(){
+
+    constructor() {
         super();
         this.props = {
             id: '',
             name: '',
             script: '',
-            fields: []
+            fields: [],
         };
         this.nodeTypeId = SourceNodeType.id();
         this.color = '#A6BBCE';
         this.label = '开始';
         this.outputs = {
             enable: true,
-            tip: '描述...'
+            tip: '描述...',
         };
         this.inputs = {
             enable: false,

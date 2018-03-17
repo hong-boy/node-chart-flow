@@ -83,7 +83,7 @@ class ViewUtil {
             .attr('text-anchor', 'start')
             .text($.isFunction(nodeTypeConfig.label) ? nodeTypeConfig.label.call(null, editor) : nodeTypeConfig.label);
         // g.port.inputs
-        if(nodeTypeConfig.inputs.enable){
+        if (nodeTypeConfig.inputs.enable) {
             let g = g4node.append('svg:g')
                 .attr('class', 'port inputs');
             g.append('svg:title').text(nodeTypeConfig.inputs.tip);
@@ -96,7 +96,7 @@ class ViewUtil {
         }
 
         // g.port.outputs
-        if(nodeTypeConfig.outputs.enable){
+        if (nodeTypeConfig.outputs.enable) {
             let g = g4node.append('svg:g')
                 .attr('class', 'port outputs');
             g.append('svg:title').text(nodeTypeConfig.outputs.tip);
@@ -829,7 +829,7 @@ class ViewUtil {
         !editor.isReadonly() && node4svg.call(ViewUtil._dragNodeOnCanvas(editor)());
         // 给node节点绑定事件
         ViewUtil._bindEventOnNode(editor, node4svg);
-        editor.emit(Constant.EVENT_ADDED_NODE, { node: node4svg});
+        editor.emit(Constant.EVENT_ADDED_NODE, { node: node4svg, });
         return node4svg;
     }
 
@@ -854,7 +854,7 @@ class ViewUtil {
         // 绘制svg节点
         editor.$canvas.css({
             'width': settings.size,
-            'height': settings.size
+            'height': settings.size,
         });
         let svg = d3.select(editor.$el.find(`#${Constant.CANVAS_ID}`).get(0))
             .append('svg:svg')
@@ -980,12 +980,12 @@ class ViewUtil {
                             let copyedNodes = svg.selectAll(`.${Constant.SVG_DT_NODE}.selected`).nodes();
                             let list = [];
                             // 复制节点属性（防止双向绑定）
-                            copyedNodes.forEach(item=>{
+                            copyedNodes.forEach((item) => {
                                 let node = d3.select(item);
                                 let datum = node.datum();
                                 let RealNodeType = editor.getNodeTypeById(datum.nodeTypeId);
                                 list.push(
-                                    $.extend(true, new RealNodeType(), datum, {x:datum.x+5, y:datum.y+5})
+                                    $.extend(true, new RealNodeType(), datum, { x: datum.x + 5, y: datum.y + 5, })
                                 );
                             });
                             editor._setCopyedNodes(list);
@@ -998,7 +998,7 @@ class ViewUtil {
                             editor.log(`粘贴了 ${copyedNodes.length} 个节点`);
                             ViewUtil.clearSelectedOnCanvas(editor);
                             let pastedNodes = ViewUtil.importData(copyedNodes, editor);
-                            editor.emit(Constant.EVENT_PASTED_NODE, {pastedNodes});
+                            editor.emit(Constant.EVENT_PASTED_NODE, { pastedNodes, });
                             break;
                         }
                         case Constant.KEY_CODE_ALPHA_A: {
@@ -1350,15 +1350,15 @@ class ViewUtil {
         ViewUtil.clearSelectedOnCanvas(editor);
         // 先绘制节点
         list.forEach((item) => {
-            let { x, y, nodeId, nodeTypeId, prev, next, label, props, isChanged, isErrored} = item;
+            let { x, y, nodeId, nodeTypeId, prev, next, label, props, isChanged, isErrored, } = item;
             let RealNodeType = editor.getNodeTypeById(nodeTypeId);
             let originalNodeId = nodeId;
             // 将新节点的nodeId、prev和next指针重置
             let nc = $.extend(
                 true,
                 new RealNodeType(),
-                { x, y, nodeId, label, props},
-                isNew ? { nodeId: ViewUtil.uuid(), prev: [], next: []} : { prev, next, isChanged, isErrored}
+                { x, y, nodeId, label, props, },
+                isNew ? { nodeId: ViewUtil.uuid(), prev: [], next: [], } : { prev, next, isChanged, isErrored, }
             );
             let newNode = ViewUtil._drawNodeOnCanvas(nc, editor);
             if (selected) {
@@ -1381,16 +1381,17 @@ class ViewUtil {
         });
 
         let arr = [];
-        map.forEach(node=>{
+        map.forEach((node) => {
             arr.push(node);
         });
 
         return arr;
     }
+
     static reEncode(data) {
         data = encodeURIComponent(data);
         data = data.replace(/%([0-9A-F]{2})/g, function(match, p1) {
-            var c = String.fromCharCode('0x'+p1);
+            var c = String.fromCharCode('0x' + p1);
             return c === '%' ? '%25' : c;
         });
         return decodeURIComponent(data);
