@@ -1,10 +1,14 @@
 node_moduels/
 docs/
 src/
-!src/scrollbars
+!src/editor
 config/
 package-lock.json
 .editorconfig
 .gitignore
 .babelrc
 .travis.yml
+.eslintrc
+.stylelintrc
+.vcmrc
+postcss.config.js

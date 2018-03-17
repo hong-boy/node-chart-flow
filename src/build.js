@@ -4,15 +4,15 @@ import 'vue-scrollbars/dist/bundle.css';
 import './editor/css/fontello/css/fontello.css';
 import Editor from './editor/Component.vue';
 
-const Plugin = {};
+const NodeChartFlow = {};
 
-Plugin.install = function (Vue, options) {
+NodeChartFlow.install = function (Vue, options) {
     Vue.use(VueScrollbars);
     Vue.component(Editor.name, Editor);
 };
 
 if (typeof Vue !== 'undefined') {
-    Vue.use(Plugin);
+    Vue.use(NodeChartFlow);
 }
 
-export default Plugin;
+export default NodeChartFlow;

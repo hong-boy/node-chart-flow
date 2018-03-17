@@ -1,21 +1,14 @@
 'use strict';
-import $ from 'jquery';
-import * as d3 from 'd3';
-import Vue from 'vue';
-import ElementUI from 'element-ui';
-import VueScrollbars from 'vue-scrollbars';
-import 'normalize.css';
-import 'vue-scrollbars/dist/bundle.css';
-import './editor/css/fontello/css/fontello.css';
-import Editor from './editor/Component.vue';
-import Layout from './demo/layout.vue';
+import Vue from 'vue'
+import ElementUI from 'element-ui'
+import NodeChartFlow from '../dist/bundle.js'
+import '../dist/bundle.css'
+import Layout from './demo/layout.vue'
 
-window.$ = $;
-window.d3 = d3;
+console.log(NodeChartFlow);
 
 Vue.use(ElementUI);
-Vue.use(VueScrollbars);
-Vue.component(Editor.name, Editor);
+Vue.use(NodeChartFlow);
 
 new Vue({
     el: '#layout',

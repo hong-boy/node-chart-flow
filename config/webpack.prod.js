@@ -14,6 +14,8 @@ module.exports = {
         path: path.join(rootdir, 'dist/'),
         publicPath: '',
         filename: '[name].js',
+        library: "NodeChartFlow",
+        libraryTarget: "umd"
     },
     module: {
         rules: [
