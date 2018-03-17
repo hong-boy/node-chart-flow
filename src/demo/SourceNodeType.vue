@@ -1,7 +1,16 @@
 <template>
     <el-row class="source-node-type">
-        <el-row class="source-box scrollbar-dynamic" v-bar>
-            I m source type... {{node.nodeTypeId}}
+        <el-row class="source-box">
+            <el-form
+                :model="node.props"
+                :rules="rules"
+                :ref="node.nodeId"
+                label-width="100px"
+                class="form">
+                <el-form-item label="数据流名称" prop="name">
+                    <el-input v-model="node.props.name"></el-input>
+                </el-form-item>
+            </el-form>
         </el-row>
     </el-row>
 </template>
@@ -10,7 +19,11 @@
     export default {
         props: ['node'],
         data(){
-            return {};
+            return {
+                rules: {
+                    name: {}
+                }
+            };
         }
     }
 </script>

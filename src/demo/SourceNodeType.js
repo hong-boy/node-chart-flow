@@ -15,7 +15,12 @@ class SourceNodeType extends  NodeType {
     }
     constructor(){
         super();
-        this.props = {};
+        this.props = {
+            id: '',
+            name: '',
+            script: '',
+            fields: []
+        };
         this.nodeTypeId = SourceNodeType.id();
         this.color = '#A6BBCE';
         this.label = '开始';

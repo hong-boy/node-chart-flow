@@ -11,7 +11,7 @@
     background: #f3f3f3;
     //border-right: 1px solid #bbb;
     box-sizing: border-box;
-    overflow: auto;
+    overflow: hidden;
     z-index: 0;
     .lasso {
         stroke-width: 1px;
@@ -20,15 +20,63 @@
         stroke-dasharray: 10 5;
         pointer-events: none;
     }
+    &.is-scroll-pretty {
+        .dt-canvas .dt-canvas {
+            max-width: 600px !important;
+            > svg {
+                position: relative;
+                left: 0;
+                top: 0;
+            }
+        }
+    }
+    &.is-scroll-native {
+        .dt-canvas {
+            overflow: auto;
+            max-width: 100%;
+        }
+    }
+    &.is-scroll-page-map {
+        .scrollbar-map {
+            width:100%;
+            height:~"calc(100% - @{dtFooterHeight})";
+            .scroll-element_outer {
+                right: auto;
+                top: auto;
+                left: 2px;
+                bottom: 2px;
+                border-radius: 6px;
+                border: 1px solid #ddd;
+                box-sizing: border-box;
+                overflow: hidden;
+            }
+            .scroll-element_size {
+                z-index: 1;
+                background: rgba(179, 225, 232, 0.1);
+                .scroll-element_track {
+                    background: rgba(179, 225, 232, 0.1);
+                }
+            }
+            .bg-map {
+                position:absolute;
+                top: 0;
+                left: 0;
+                z-index: 1;
+            }
+        }
+    }
     .dt-canvas {
         display: inline-block;
         position: relative;
         left: 0;
         top: 0;
-        max-width: 100% !important;
-        //max-height: ~"calc(100% - @{dtFooterHeight})" !important;
         background: #CDDC39;
         overflow: auto;
+        > svg {
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
     }
     .dt-c-grid {
         pointer-events: none;
@@ -57,7 +105,6 @@
             stroke: #888;
             stroke-width: 3;
             fill: none;
-            //pointer-events: none;
             &.selected,
             &.hovered {
                 stroke: @color4selected;

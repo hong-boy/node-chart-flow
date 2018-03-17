@@ -2,6 +2,7 @@
 import $ from 'jquery';
 import NodeType from './NodeType.js';
 import util from './ViewUtil.js';
+import SaveSVGAsPNG from 'save-svg-as-png'
 import Constant from './Constant.js';
 import Events from 'events';
 
@@ -14,6 +15,7 @@ const DEFAULT_CONFIG = {
     data: [],
     settings: {
         size: 5000,
+        scrollbarStyle: 'page-map', // 滚动条风格 - map:pageMap native:原生 pretty:简约风格
         tips: {
             enable: true, // 是否启用tips功能
             interval: 3000, // tip显示间隔
@@ -43,7 +45,11 @@ class Editor extends Events {
         this.$workspace = this.$el.find('.dt-workspace');
         this.$divider = this.$el.find('.divider-line');
         this.$sidebar = this.$el.find('.dt-side-bar');
-        this.$canvas = this.$workspace.find('.dt-canvas .dt-canvas').attr('id', Constant.CANVAS_ID);
+        this.$canvas = this.$workspace.find(
+            config.settings.scrollbarStyle === Constant.SCROLLBAR_PRETTY ?
+            '.dt-canvas .dt-canvas' : '.dt-canvas'
+        );
+        this.$canvas.attr('id', Constant.CANVAS_ID);
 
         this.___svg = null; // 存放d3生成的svg实例
         this.___def = {
@@ -75,16 +81,41 @@ class Editor extends Events {
         util.renderTipBox(thiz);
         setTimeout(function () {
             // 绘制节点
+            config.data.map(node=>{
+                node.isChanged = false;
+                node.isErrored = false;
+                return node;
+            });
             thiz.importData(config.data, false, false);
         }, 10);
     }
 
-    update() {
-
+    destroy() {
+        this.config = null;
+        this.___def.CopyedNodes.clear();
+        this.___def.NodeCatagory.clear();
+        this.___def.NodeTypes.clear();
+        this.___def.Relations.clear();
+        this.___def.tips.clear();
+        this.___def = null;
+        this.___svg = null;
     }
 
-    destroy() {
-
+    /**
+     * 生成当前画布截图
+     */
+    screenshot(){
+        let thiz = this;
+        return new Promise((resolve, reject)=>{
+            let settings = thiz.config.settings;
+            let $svg = thiz.$canvas.find('svg').clone();
+            $svg.find('g.dt-c-grid').remove();
+            let width = parseInt($svg.attr('width'));
+            let scale = width / settings.size;
+            SaveSVGAsPNG.svgAsPngUri($svg.get(0), {scale}, function (uri) {
+                resolve(uri);
+            })
+        });
     }
 
     /**
@@ -204,7 +235,6 @@ class Editor extends Events {
      */
     checkCircular() {
         // TODO 判断图中是否有环
-
     }
 
     _setRelation(from, to, line, id) {
@@ -228,6 +258,7 @@ class Editor extends Events {
     getRelations() {
         return this.___def.Relations;
     }
+
 
     _setCopyedNodes(nodes) {
         this.___def.CopyedNodes = new Set(nodes);

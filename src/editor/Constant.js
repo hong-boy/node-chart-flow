@@ -38,12 +38,16 @@ export default {
     KEY_CODE_ALPHA_C: 67,
     KEY_CODE_ALPHA_V: 86,
     KEY_CODE_ALPHA_A: 65,
+    SCROLLBAR_MAP: 'page-map',
+    SCROLLBAR_NATIVE: 'native',
+    SCROLLBAR_PRETTY: 'pretty',
     EVENT_VALIDATE_FAILED: 'validate-failed', // 校验失败时触发的事件
     EVENT_ADDED_LINE: 'added-line', // 添加连线后触发的事件
     EVENT_ADDED_NODE: 'added-node', // 添加节点后触发的事件
     EVENT_DELETED_LINE: 'deleted-line', // 连线被删除后触发的事件
     EVENT_DELETED_NODE: 'deleted-node', // 节点被删除后触发的事件
     EVENT_CLICKED_NODE: 'clicked-node', // 节点单击事件
+    EVENT_PASTED_NODE: 'pasted-node', // 节点被粘贴事件
     DESC_LIST: [ // 编辑器描述
         '您可以在设定中选择显示或隐藏这些提示。',
         '您可以用 <span class="help-key-block"><span class="help-key">delete</span></span> 删除选择的节点或链接。',

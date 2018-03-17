@@ -3,6 +3,7 @@
         <node-chart-flow
             @registerNodeType="registerNodeType"
             :data="nodes"
+            scrollbarStyle="native"
             :showGrid="true"
             :readonly="false"
             @clickedNode="clickedNode"

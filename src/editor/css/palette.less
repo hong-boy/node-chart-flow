@@ -22,6 +22,9 @@
         width: 120px;
         background-size: contain;
         position: relative;
+        &.ui-draggable-dragging {
+            z-index: 100;
+        }
         &:hover {
             border-color: @color4selected;
             .node-port {

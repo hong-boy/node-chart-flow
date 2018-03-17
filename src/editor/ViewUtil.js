@@ -83,23 +83,31 @@ class ViewUtil {
             .attr('text-anchor', 'start')
             .text($.isFunction(nodeTypeConfig.label) ? nodeTypeConfig.label.call(null, editor) : nodeTypeConfig.label);
         // g.port.inputs
-        nodeTypeConfig.inputs.enable && g4node.append('svg:g')
-            .attr('class', 'port inputs')
-            .append('svg:rect')
-            .attr('class', 'node-port node-port-input')
-            .attr('rx', 3)
-            .attr('ry', 3)
-            .attr('width', 10)
-            .attr('height', 10);
+        if(nodeTypeConfig.inputs.enable){
+            let g = g4node.append('svg:g')
+                .attr('class', 'port inputs');
+            g.append('svg:title').text(nodeTypeConfig.inputs.tip);
+            g.append('svg:rect')
+                .attr('class', 'node-port node-port-input')
+                .attr('rx', 3)
+                .attr('ry', 3)
+                .attr('width', 10)
+                .attr('height', 10);
+        }
+
         // g.port.outputs
-        nodeTypeConfig.outputs.enable && g4node.append('svg:g')
-            .attr('class', 'port outputs')
-            .append('svg:rect')
-            .attr('class', 'node-port node-port-output')
-            .attr('rx', 3)
-            .attr('ry', 3)
-            .attr('width', 10)
-            .attr('height', 10);
+        if(nodeTypeConfig.outputs.enable){
+            let g = g4node.append('svg:g')
+                .attr('class', 'port outputs');
+            g.append('svg:title').text(nodeTypeConfig.outputs.tip);
+            g.append('svg:rect')
+                .attr('class', 'node-port node-port-output')
+                .attr('rx', 3)
+                .attr('ry', 3)
+                .attr('width', 10)
+                .attr('height', 10);
+        }
+
         // span.node-status.error
         g4node.append('svg:rect')
             .attr('fill', Constant.DEFAULT_NODE_STATUS_ERROR_COLOR)
@@ -108,7 +116,8 @@ class ViewUtil {
             .attr('y', -4)
             .attr('rx', 5)
             .attr('ry', 5)
-            .attr('class', 'node-status error hide');
+            .attr('class', 'node-status error')
+            .classed('hide', !nodeTypeConfig.isErrored);
         // span.node-status.changed
         g4node.append('svg:rect')
             .attr('fill', Constant.DEFAULT_NODE_STATUS_CHANGED_COLOR)
@@ -117,7 +126,8 @@ class ViewUtil {
             .attr('y', -4)
             .attr('rx', 5)
             .attr('ry', 5)
-            .attr('class', 'node-status changed');
+            .attr('class', 'node-status changed')
+            .classed('hide', !nodeTypeConfig.isChanged);
 
         return g4node;
     }
@@ -592,8 +602,9 @@ class ViewUtil {
         // 绘制连线（用于鼠标绘制连线）
         let svg = editor.getSVG();
         let lineGroups = svg.select(`.${Constant.SVG_DT_LINE_GROUP}`);
+        lineGroups.selectAll('.fake-line').remove();
         let g = lineGroups.append('svg:g')
-            .classed('dt-line', true);
+            .classed('dt-line fake-line', true);
         let fromPos = ViewUtil._genPos4FromNode(from);
         let fakeLine = g.append('svg:path')
             .classed('path-line', true)
@@ -818,7 +829,7 @@ class ViewUtil {
         !editor.isReadonly() && node4svg.call(ViewUtil._dragNodeOnCanvas(editor)());
         // 给node节点绑定事件
         ViewUtil._bindEventOnNode(editor, node4svg);
-        editor.emit(Constant.EVENT_ADDED_NODE, { node: node4svg, });
+        editor.emit(Constant.EVENT_ADDED_NODE, { node: node4svg});
         return node4svg;
     }
 
@@ -841,6 +852,10 @@ class ViewUtil {
 
     static _drawSVGCanvas(settings, editor) {
         // 绘制svg节点
+        editor.$canvas.css({
+            'width': settings.size,
+            'height': settings.size
+        });
         let svg = d3.select(editor.$el.find(`#${Constant.CANVAS_ID}`).get(0))
             .append('svg:svg')
             .attr('height', settings.size)
@@ -916,6 +931,8 @@ class ViewUtil {
 
                     lasso.attr('width', Math.abs(w))
                         .attr('height', Math.abs(h));
+                    d3.event.preventDefault();
+                    d3.event.stopPropagation();
                 });
                 bg.on('mouseup.lasso', function () {
                     // 判断是否有节点被覆盖
@@ -938,6 +955,8 @@ class ViewUtil {
                     lasso.remove();
                     svg.selectAll('.dt-node-group, .dt-line-group').style('pointer-events', 'auto');
                     bg.on('.lasso', null);
+                    d3.event.preventDefault();
+                    d3.event.stopPropagation();
                 });
             }
         };
@@ -959,8 +978,18 @@ class ViewUtil {
                         case Constant.KEY_CODE_ALPHA_C: {
                             // ctrl + c
                             let copyedNodes = svg.selectAll(`.${Constant.SVG_DT_NODE}.selected`).nodes();
-                            editor._setCopyedNodes(copyedNodes);
-                            editor.log(`复制了 ${copyedNodes.length} 个节点`);
+                            let list = [];
+                            // 复制节点属性（防止双向绑定）
+                            copyedNodes.forEach(item=>{
+                                let node = d3.select(item);
+                                let datum = node.datum();
+                                let RealNodeType = editor.getNodeTypeById(datum.nodeTypeId);
+                                list.push(
+                                    $.extend(true, new RealNodeType(), datum, {x:datum.x+5, y:datum.y+5})
+                                );
+                            });
+                            editor._setCopyedNodes(list);
+                            editor.log(`复制了 ${list.length} 个节点`, list);
                             break;
                         }
                         case Constant.KEY_CODE_ALPHA_V: {
@@ -968,32 +997,8 @@ class ViewUtil {
                             let copyedNodes = Array.from(editor.getCopyedNodes());
                             editor.log(`粘贴了 ${copyedNodes.length} 个节点`);
                             ViewUtil.clearSelectedOnCanvas(editor);
-                            let map = new Map();
-                            // 复制节点
-                            copyedNodes.forEach((item) => {
-                                let srcNode = d3.select(item);
-                                let clonedNode = ViewUtil.cloneNode(srcNode, editor);
-                                clonedNode.classed('selected', true);
-                                map.set(srcNode.datum().nodeId, clonedNode);
-                            });
-                            // 复制连线关系
-                            let set = new Set();
-                            // 过滤出要复制的连线
-                            editor.getRelations().forEach((lineItem) => {
-                                if (copyedNodes.indexOf(lineItem.from) && copyedNodes.indexOf(lineItem.to)) {
-                                    set.add(lineItem);
-                                }
-                            });
-                            // 确定from和to节点
-                            set.forEach((lineItem) => {
-                                let fromId = lineItem.from.datum().nodeId;
-                                let toId = lineItem.to.datum().nodeId;
-                                let clonedFromNode = map.get(fromId);
-                                let clonedToNode = map.get(toId);
-                                if (clonedFromNode && clonedToNode) {
-                                    ViewUtil.drawLine(clonedFromNode, clonedToNode, editor);
-                                }
-                            });
+                            let pastedNodes = ViewUtil.importData(copyedNodes, editor);
+                            editor.emit(Constant.EVENT_PASTED_NODE, {pastedNodes});
                             break;
                         }
                         case Constant.KEY_CODE_ALPHA_A: {
@@ -1339,24 +1344,24 @@ class ViewUtil {
         });
     }
 
-    static importData(list, editor, selected = true, fresh = true) {
-        // 导入数据（将导入的节点作为新节点对待）
+    static importData(list, editor, selected = true, isNew = true) {
+        // 导入数据（默认将待导入的节点作为新节点对待）
         let map = new Map();
+        ViewUtil.clearSelectedOnCanvas(editor);
         // 先绘制节点
         list.forEach((item) => {
-            let { x, y, nodeId, nodeTypeId, prev, next, label, props, } = item;
+            let { x, y, nodeId, nodeTypeId, prev, next, label, props, isChanged, isErrored} = item;
             let RealNodeType = editor.getNodeTypeById(nodeTypeId);
             let originalNodeId = nodeId;
             // 将新节点的nodeId、prev和next指针重置
             let nc = $.extend(
                 true,
                 new RealNodeType(),
-                { x, y, nodeId, label, props, },
-                fresh ? { nodeId: ViewUtil.uuid(), prev: [], next: [], } : { prev, next, }
+                { x, y, nodeId, label, props},
+                isNew ? { nodeId: ViewUtil.uuid(), prev: [], next: []} : { prev, next, isChanged, isErrored}
             );
             let newNode = ViewUtil._drawNodeOnCanvas(nc, editor);
             if (selected) {
-                ViewUtil.clearSelectedOnCanvas(editor);
                 newNode.classed('selected', true);
             }
             map.set(originalNodeId, newNode);
@@ -1374,6 +1379,21 @@ class ViewUtil {
                 ViewUtil.drawLine(map.get(nid), currNode, editor);
             });
         });
+
+        let arr = [];
+        map.forEach(node=>{
+            arr.push(node);
+        });
+
+        return arr;
+    }
+    static reEncode(data) {
+        data = encodeURIComponent(data);
+        data = data.replace(/%([0-9A-F]{2})/g, function(match, p1) {
+            var c = String.fromCharCode('0x'+p1);
+            return c === '%' ? '%25' : c;
+        });
+        return decodeURIComponent(data);
     }
 }
 
