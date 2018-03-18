@@ -37,7 +37,7 @@ class Editor extends Events {
      */
     constructor(el, config) {
         super();
-        this._debug = true; // 用于打印关键信息方便调试
+        this._debug = false; // 用于打印关键信息方便调试
         this.config = $.extend(true, {}, DEFAULT_CONFIG, config);
 
         this.$el = $(el);
