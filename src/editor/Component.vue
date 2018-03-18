@@ -35,7 +35,6 @@
 </template>
 
 <script type="text/ecmascript-6">
-    import Vue from 'vue'
     import Editor from './Editor.js'
     import Constant from './Constant.js'
 
