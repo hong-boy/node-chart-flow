@@ -1,6 +1,6 @@
 {
   "name": "node-chart-flow",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "A simple visual flow editor",
   "main": "./index.js",
   "scripts": {
