@@ -1,3 +1,13 @@
+<a name="0.0.8"></a>
+## [0.0.8](https://github.com/hong-boy/node-chart-flow/compare/v0.0.7...v0.0.8) (2018-03-18)
+
+
+### Bug Fixes
+
+* 修复bug(index.js引用错误) ([8696db8](https://github.com/hong-boy/node-chart-flow/commit/8696db8))
+
+
+
 <a name="0.0.7"></a>
 ## [0.0.7](https://github.com/hong-boy/node-chart-flow/compare/v0.0.6...v0.0.7) (2018-03-18)
 
