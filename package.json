@@ -2,7 +2,7 @@
   "name": "node-chart-flow",
   "version": "0.0.8",
   "description": "A simple visual flow editor",
-  "main": "./index.js",
+  "main": "./dist/bundle.js",
   "scripts": {
     "dev": "cross-env NODE_ENV=development webpack-dev-server --config config/webpack.config.js",
     "build": "cross-env NODE_ENV=production node_modules/.bin/webpack --config config/webpack.prod.js",
