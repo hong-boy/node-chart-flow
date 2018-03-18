@@ -1,4 +1,5 @@
-import { NodeType } from '../editor/Editor';
+import Vue from 'vue';
+import { NodeType } from '../../dist/bundle.js';
 
 /**
  * 数据统计
@@ -9,9 +10,9 @@ class StatsNodeType extends NodeType {
     }
 
     static component() {
-        return (resolve) => {
+        Vue.component(StatsNodeType.id(), (resolve) => {
  return require(['./StatsNodeType.vue'], resolve);
-};
+});
     }
 
     validate(from, to, editor) {

@@ -37,7 +37,7 @@ class Editor extends Events {
      */
     constructor(el, config) {
         super();
-        this._debug = false; // 用于打印关键信息方便调试
+        this._debug = true; // 用于打印关键信息方便调试
         this.config = $.extend(true, {}, DEFAULT_CONFIG, config);
 
         this.$el = $(el);
@@ -170,12 +170,16 @@ class Editor extends Events {
 
     /**
      * 注册节点类型
-     * @param{Function} func
      * PS：func函数会传入NodeType类作为参数，用户必须继承该类
+     * @param func
+     * @returns {Promise<void>}
      */
-    registerNodeType(func) {
+    async registerNodeType(func) {
         // 注册节点类型模板
-        let RealNodeType = func.call(null, NodeType);
+        let RealNodeType = await func.call(null, NodeType);
+        if (RealNodeType.__esModule) {
+            RealNodeType = RealNodeType.default;
+        }
         this.___def.NodeTypes.set(RealNodeType.id(), RealNodeType);
     }
 

@@ -1,7 +1,7 @@
 <template>
     <div class="wrapper">
         <node-chart-flow
-            @registerNodeType="registerNodeType"
+            :registerNodeType="registerNodeType"
             :data="nodes"
             scrollbarStyle="native"
             :showGrid="true"
@@ -16,12 +16,11 @@
 </template>
 
 <script type="text/ecmascript-6">
-    import SourceNodeType from './SourceNodeType'
-    import TransformNodeType from './TransformNodeType'
-    import StatsNodeType from './StatsNodeType'
-    import AlarmNodeType from './AlarmNodeType'
 
     export default {
+        // components: {
+        //     'node-chart-flow': resolve=>require(['../../dist/bundle.js'], resolve)
+        // },
         data(){
             return {
                 nodes: require('./data.json')
@@ -37,12 +36,20 @@
             addedLine(){},
             deletedNode(){},
             deletedLine(){},
-            registerNodeType(editor){
+            async registerNodeType(editor){
                 // 注册节点类型
-                editor.registerNodeType(()=>SourceNodeType);
-                editor.registerNodeType(()=>TransformNodeType);
-                editor.registerNodeType(()=>StatsNodeType);
-                editor.registerNodeType(()=>AlarmNodeType);
+                await editor.registerNodeType(function () {
+                    return new Promise(resolve=>require(['./SourceNodeType'], resolve));
+                });
+                await editor.registerNodeType(function () {
+                    return new Promise(resolve=>require(['./TransformNodeType'], resolve));
+                });
+                await editor.registerNodeType(function () {
+                    return new Promise(resolve=>require(['./StatsNodeType'], resolve));
+                });
+                await editor.registerNodeType(function () {
+                    return new Promise(resolve=>require(['./AlarmNodeType'], resolve));
+                });
             },
         },
     }

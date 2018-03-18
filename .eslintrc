@@ -3,6 +3,7 @@
         "ecmaVersion":6,
         "sourceType":"module"
     },
+    "parser": "babel-eslint",
     "env":{
         "browser":true,
         "es6":true,

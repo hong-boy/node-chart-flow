@@ -72,20 +72,16 @@
                     },
                 }
             };
-            thiz.$nextTick(function () {
+            thiz.$nextTick( async function () {
                 thiz.editor = new Editor(thiz.$el, config);
-                window.editor = thiz.editor;
-                thiz.$emit('registerNodeType', thiz.editor);
-                thiz.$nextTick(function () {
-                    // 注册组件
-                    thiz.editor.getNodeTypes().forEach((RealNodeType, id)=>{
-                        if(Object.prototype.toString.call(RealNodeType.component) === '[object Function]'){
-                            Vue.component(id, RealNodeType.component());
-                        }
-                    });
-                });
-
+                // thiz.$emit('registerNodeType', thiz.editor);
+                // 注册节点类型
+                await thiz.registerNodeType(thiz.editor);
+                // 注册节点属性组件
+                thiz.editor.getNodeTypes().forEach(RealNodeType=>RealNodeType.component());
+                // 初始化
                 thiz.editor.init();
+                // 绑定事件
                 thiz.editor.on('added-line', function (...args) {
                     thiz.$emit('addedLine', args)
                 });

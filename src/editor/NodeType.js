@@ -3,10 +3,10 @@ import Constant from './Constant.js';
 
 class NodeType {
     constructor(config = {}) {
-        // 是否有更改
+        // 是否有更改 | 是否为新节点
         this.isChanged = true;
         // 是否有错误
-        this.isErrored = true;
+        this.isErrored = false;
         // 节点ID
         this.nodeId = config.nodeId;
         // 坐标

@@ -1,4 +1,5 @@
-import { NodeType } from '../editor/Editor';
+import Vue from 'vue';
+import { NodeType } from '../../dist/bundle.js';
 
 /**
  * 开始节点
@@ -9,9 +10,9 @@ class SourceNodeType extends NodeType {
     }
 
     static component() {
-        return (resolve) => {
+        Vue.component(SourceNodeType.id(), (resolve) => {
  return require(['./SourceNodeType.vue'], resolve);
-};
+});
     }
 
     validate(from, to, editor) {

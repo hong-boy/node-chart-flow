@@ -8,6 +8,7 @@
 
 <script type="text/ecmascript-6">
     export default {
+        name: 'alarmNodeType',
         props: ['node'],
         data(){
             return {};

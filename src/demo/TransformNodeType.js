@@ -1,4 +1,5 @@
-import { NodeType } from '../editor/Editor';
+import Vue from 'vue';
+import { NodeType } from '../../dist/bundle.js';
 
 /**
  * 数据转换
@@ -9,9 +10,9 @@ class TransformNodeType extends NodeType {
     }
 
     static component() {
-        return (resolve) => {
+        Vue.component(TransformNodeType.id(), (resolve) => {
  return require(['./TransformNodeType.vue'], resolve);
-};
+});
     }
 
     validate(from, to, editor) {

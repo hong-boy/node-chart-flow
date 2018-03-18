@@ -1,4 +1,5 @@
-import { NodeType } from '../editor/Editor';
+import Vue from 'vue';
+import { NodeType } from '../../dist/bundle.js';
 
 const NODE_DESC = require('./node_desc.json');
 
@@ -11,9 +12,9 @@ class AlarmNodeType extends NodeType {
     }
 
     static component() {
-        return (resolve) => {
+        Vue.component(AlarmNodeType.id(), (resolve) => {
  return require(['./AlarmNodeType.vue'], resolve);
-};
+});
     }
 
     static tip() {
@@ -36,7 +37,7 @@ class AlarmNodeType extends NodeType {
         super();
         this.props = {};
         this.nodeTypeId = AlarmNodeType.id();
-        this.icon = require('../alert.png');
+        this.icon = require('../editor/css/icon/default.png');
         this.color = '#E59191';
         this.label = '告警';
         this.inputs = {

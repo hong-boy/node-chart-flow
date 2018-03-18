@@ -8,7 +8,7 @@ const rootdir = path.join(__dirname, '../');
 module.exports = {
     mode: 'production',
     entry: {
-        "bundle": [path.join(rootdir, 'src/build.js')]
+        "bundle": [path.join(rootdir, 'src/build.js')],
     },
     output: {
         path: path.join(rootdir, 'dist/'),
@@ -40,11 +40,7 @@ module.exports = {
         ]
     },
     plugins: [
-        // new webpack.optimize.UglifyJsPlugin({
-        //     compress: {
-        //         warnings: false
-        //     }
-        // }),
+        // new webpack.IgnorePlugin(/^(d3|jquery|jquery-ui){1}\s*$/),
         new ExtractTextPlugin('bundle.css'),
         new webpack.DefinePlugin({
             "process.env": {
