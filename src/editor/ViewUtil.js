@@ -1396,6 +1396,12 @@ class ViewUtil {
         });
         return decodeURIComponent(data);
     }
+
+    static updateNodeLabel(editor, nodeId, label){
+        let node = editor.getSVG().select(`#${nodeId}`);
+        node.select('.node-label').text(label);
+        ViewUtil._updateNodeSize(node, editor);
+    }
 }
 
 export default ViewUtil;

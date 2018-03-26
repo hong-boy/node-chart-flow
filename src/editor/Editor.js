@@ -1,5 +1,6 @@
 'use strict';
 import $ from 'jquery';
+import * as d3 from 'd3';
 import NodeType from './NodeType.js';
 import util from './ViewUtil.js';
 import SaveSVGAsPNG from 'save-svg-as-png';
@@ -302,6 +303,39 @@ class Editor extends Events {
 
     getTips() {
         return this.___def.tips;
+    }
+
+    /**
+     * 更新节点画布中节点的label
+     * @param nodeId
+     * @param label
+     */
+    updateNodeLabel(nodeId, label){
+        util.updateNodeLabel(this, nodeId, label);
+    }
+
+    updateNodeProps(nodeId, props){
+        let thiz = this;
+        let node = thiz.getSVG().select(`#${nodeId}`);
+        let datum = node.datum();
+        datum.props = props;
+    }
+
+    /**
+     * 更加节点类型获取节点列表
+     * @param nodeTypeId
+     */
+    getNodeListByNodeType(nodeTypeId){
+        let thiz = this;
+        let nodeList = thiz.getSVG().selectAll(`.${Constant.SVG_DT_NODE}`).nodes();
+        let list = [];
+        nodeList.forEach(item=>{
+            let datum = d3.select(item).datum();
+            if(datum.nodeTypeId === nodeTypeId){
+                list.push(datum);
+            }
+        });
+        return list;
     }
 }
 

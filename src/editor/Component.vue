@@ -26,7 +26,9 @@
         <div class="divider-line"></div>
         <div class="dt-side-bar">
             <div class="dt-prop-box">
-                <component :is="compt.id" :node.sync="compt.node"></component>
+                <keep-alive>
+                    <component :is="compt.id" :node.sync="compt.node" :editor="editor"></component>
+                </keep-alive>
             </div>
             <div class="divider-horizonal"></div>
             <div class="dt-tip-box scrollbar-dynamic" v-bar></div>
@@ -97,11 +99,14 @@
                     thiz.$emit('pastedNode', pastedNodes)
                 });
                 thiz.editor.on('clicked-node', function ({node}=args) {
-                    let datum = node.datum();
-                    let nodeTypeId = datum.nodeTypeId;
-                    thiz.compt.id = nodeTypeId;
-                    thiz.compt.node = datum;
-                    thiz.$emit('clickedNode', node)
+                    thiz.compt.id = null;
+                    setTimeout(function () {
+                        let datum = node.datum();
+                        let nodeTypeId = datum.nodeTypeId;
+                        thiz.compt.id = nodeTypeId;
+                        thiz.compt.node = datum;
+                        thiz.$emit('clickedNode', node);
+                    }, 1);
                 });
             })
         },
