@@ -26,9 +26,7 @@
         <div class="divider-line"></div>
         <div class="dt-side-bar">
             <div class="dt-prop-box">
-                <keep-alive>
-                    <component :is="compt.id" :node.sync="compt.node" :editor="editor"></component>
-                </keep-alive>
+                <component :is="compt.id" :node.sync="compt.node" :editor="editor" ref="prop"></component>
             </div>
             <div class="divider-horizonal"></div>
             <div class="dt-tip-box scrollbar-dynamic" v-bar></div>
@@ -45,6 +43,7 @@
         props: {
             data: {type:Array, default: []},
             registerNodeType: {type: Function},
+            clearPropCompt: {type: Boolean, default:false}, // 清除动态组件，等价于 compt.id=null
             readonly: {type: Boolean, default:false}, // readonly只有在初始化的时候传入才有效
             showTips: {type: Boolean, default:false},
             intervalTips: {type: Number, default: 3000},
@@ -83,13 +82,13 @@
                 // 初始化
                 thiz.editor.init();
                 // 绑定事件
-                thiz.editor.on('added-line', function (...args) {
+                thiz.editor.on('added-line', function (args) {
                     thiz.$emit('addedLine', args)
                 });
-                thiz.editor.on('deleted-line', function (...args) {
+                thiz.editor.on('deleted-line', function (args) {
                     thiz.$emit('deletedLine', args)
                 });
-                thiz.editor.on('deleted-node', function (...args) {
+                thiz.editor.on('deleted-node', function (args) {
                     thiz.$emit('deletedNode', args)
                 });
                 thiz.editor.on('added-node', function (args) {
@@ -99,14 +98,15 @@
                     thiz.$emit('pastedNode', pastedNodes)
                 });
                 thiz.editor.on('clicked-node', function ({node}=args) {
+                    // 切换视图
                     thiz.compt.id = null;
-                    setTimeout(function () {
+                    thiz.$nextTick(function () {
                         let datum = node.datum();
                         let nodeTypeId = datum.nodeTypeId;
                         thiz.compt.id = nodeTypeId;
                         thiz.compt.node = datum;
                         thiz.$emit('clickedNode', node);
-                    }, 1);
+                    });
                 });
             })
         },
@@ -182,6 +182,13 @@
                     };
                 }
             },
+        },
+        watch: {
+            clearPropCompt(val, oldVal){
+                if(val){
+                    this.compt.id = null;
+                }
+            }
         }
     }
 </script>

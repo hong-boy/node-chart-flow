@@ -78,7 +78,7 @@ class ViewUtil {
         g4node.append('svg:text')
             .attr('class', 'node-label')
             .attr('x', 38)
-            .attr('y', 14)
+            .attr('y', 15)
             .attr('dy', '0.35em')
             .attr('text-anchor', 'start')
             .text($.isFunction(nodeTypeConfig.label) ? nodeTypeConfig.label.call(null, editor) : nodeTypeConfig.label);
@@ -324,7 +324,7 @@ class ViewUtil {
         }).text(labelTxt);
         let width = $span.appendTo('body').width();
         $span.remove();
-        return Math.min(parseInt(width), Constant.SVG_MAX_WIDTH_OF_NODE_RECT);
+        return Math.min(parseInt(width), Constant.SVG_MAX_WIDTH_OF_NODE_RECT) + 15;
     }
 
     static _updateNodeSize(node4svg, editor) {
@@ -1373,10 +1373,10 @@ class ViewUtil {
             let oid = item.nodeId;
             let currNode = map.get(oid);
             next.forEach((nid) => {
-                ViewUtil.drawLine(currNode, map.get(nid), editor);
+                map.get(nid) && ViewUtil.drawLine(currNode, map.get(nid), editor);
             });
             prev.forEach((nid) => {
-                ViewUtil.drawLine(map.get(nid), currNode, editor);
+                map.get(nid) && ViewUtil.drawLine(map.get(nid), currNode, editor);
             });
         });
 
@@ -1397,10 +1397,13 @@ class ViewUtil {
         return decodeURIComponent(data);
     }
 
-    static updateNodeLabel(editor, nodeId, label){
-        let node = editor.getSVG().select(`#${nodeId}`);
-        node.select('.node-label').text(label);
-        ViewUtil._updateNodeSize(node, editor);
+    static updateNodeLabel(editor, nodeId, label) {
+        window.requestAnimationFrame(function () {
+            let node = editor.getSVG().select(`#${nodeId}`);
+            node.select('.node-label').text(label);
+            ViewUtil._updateNodeSize(node, editor);
+            ViewUtil.updateAllLinePath(editor);
+        })
     }
 }
 

@@ -310,11 +310,11 @@ class Editor extends Events {
      * @param nodeId
      * @param label
      */
-    updateNodeLabel(nodeId, label){
+    updateNodeLabel(nodeId, label) {
         util.updateNodeLabel(this, nodeId, label);
     }
 
-    updateNodeProps(nodeId, props){
+    updateNodeProps(nodeId, props) {
         let thiz = this;
         let node = thiz.getSVG().select(`#${nodeId}`);
         let datum = node.datum();
@@ -325,17 +325,25 @@ class Editor extends Events {
      * 更加节点类型获取节点列表
      * @param nodeTypeId
      */
-    getNodeListByNodeType(nodeTypeId){
+    getNodeListByNodeType(nodeTypeId) {
         let thiz = this;
         let nodeList = thiz.getSVG().selectAll(`.${Constant.SVG_DT_NODE}`).nodes();
         let list = [];
-        nodeList.forEach(item=>{
+        nodeList.forEach((item) => {
             let datum = d3.select(item).datum();
-            if(datum.nodeTypeId === nodeTypeId){
+            if (datum.nodeTypeId === nodeTypeId) {
                 list.push(datum);
             }
         });
         return list;
+    }
+
+    getNodeDatumById(nid){
+        // 根据nodeId获取datum
+        if(nid){
+            let node = this.getSVG().select(`#${nid}`).node();
+            return d3.select(node).datum();
+        }
     }
 }
 
