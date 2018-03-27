@@ -1403,7 +1403,7 @@ class ViewUtil {
             node.select('.node-label').text(label);
             ViewUtil._updateNodeSize(node, editor);
             ViewUtil.updateAllLinePath(editor);
-        })
+        });
     }
 }
 

@@ -338,9 +338,9 @@ class Editor extends Events {
         return list;
     }
 
-    getNodeDatumById(nid){
+    getNodeDatumById(nid) {
         // 根据nodeId获取datum
-        if(nid){
+        if (nid) {
             let node = this.getSVG().select(`#${nid}`).node();
             return d3.select(node).datum();
         }
