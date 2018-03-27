@@ -1,3 +1,548 @@
+.dt-editor {
+  position: relative;
+  display: -webkit-inline-box;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: row;
+          flex-direction: row;
+  -webkit-box-align: start;
+      -ms-flex-align: start;
+          align-items: start;
+  -webkit-box-pack: start;
+      -ms-flex-pack: start;
+          justify-content: flex-start;
+  -ms-flex-wrap: nowrap;
+      flex-wrap: nowrap;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  height: 100%;
+  width: 100%;
+  border: 1px solid #bbb;
+  font-size: 14px;
+  font-family: "Microsoft YaHei", system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Droid Sans, Helvetica Neue;
+  color: #666;
+}
+.dt-editor .hide {
+  display: none !important;
+}
+.dt-editor.is-readonly .dt-palette {
+  display: none;
+}
+.dt-editor .dt-palette {
+  display: inline-block;
+  min-width: 165px;
+  height: 100%;
+  z-index: 1;
+  background: #f3f3f3;
+  border-right: 1px solid #bbb;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+}
+.dt-editor .dt-palette .node-tpl {
+  background: #e49191;
+  height: 28px;
+  cursor: move;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  border: 1px solid #999;
+  background-position: 5% 50%;
+  background-repeat: no-repeat;
+  width: 120px;
+  background-size: contain;
+  position: relative;
+}
+.dt-editor .dt-palette .node-tpl.ui-draggable-dragging {
+  z-index: 100;
+}
+.dt-editor .dt-palette .node-tpl:hover {
+  border-color: #ff7f0e;
+}
+.dt-editor .dt-palette .node-tpl:hover .node-port {
+  border-color: #999;
+  background-color: #eee;
+}
+.dt-editor .dt-palette .node-tpl .node-label {
+  font-size: 13px;
+  margin: 4px 0 4px 30px;
+  line-height: 20px;
+  overflow: hidden;
+  text-align: center;
+  pointer-events: none;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  stroke: none;
+}
+.dt-editor .dt-palette .node-tpl .node-icon-container {
+  position: absolute;
+  text-align: center;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  height: 28px;
+  width: 28px;
+  border-right: 1px solid rgba(0, 0, 0, .1);
+  background-color: rgba(0, 0, 0, .05);
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+}
+.dt-editor .dt-palette .node-tpl .node-port {
+  position: absolute;
+  top: 8px;
+  left: -5px;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  background: #d9d9d9;
+  border-radius: 3px;
+  width: 10px;
+  height: 10px;
+  border: 1px solid #999;
+}
+.dt-editor .dt-palette .node-tpl .node-port.node-port-outputs {
+  left: auto;
+  right: -6px;
+}
+.dt-editor .dt-palette .node-tpl .dt-icon {
+  display: inline-block;
+  width: 20px;
+  height: 29px;
+  background-position: 50% 50%;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+.dt-editor .dt-workspace {
+  position: relative;
+  display: -webkit-inline-box;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-align: start;
+      -ms-flex-align: start;
+          align-items: start;
+  -webkit-box-pack: start;
+      -ms-flex-pack: start;
+          justify-content: flex-start;
+  -ms-flex-wrap: nowrap;
+      flex-wrap: nowrap;
+  -webkit-box-flex: 1;
+      -ms-flex-positive: 1;
+          flex-grow: 1;
+  height: 100%;
+  width: 100%;
+  margin-right: 9px;
+  background: #f3f3f3;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  overflow: hidden;
+  z-index: 0;
+}
+.dt-editor .dt-workspace .lasso {
+  stroke-width: 1px;
+  stroke: #ff7f0e;
+  fill: rgba(20, 125, 255, .1);
+  stroke-dasharray: 10 5;
+  pointer-events: none;
+}
+.dt-editor .dt-workspace.is-scroll-pretty .dt-canvas .dt-canvas {
+  max-width: 600px !important;
+}
+.dt-editor .dt-workspace.is-scroll-pretty .dt-canvas .dt-canvas > svg {
+  position: relative;
+  left: 0;
+  top: 0;
+}
+.dt-editor .dt-workspace.is-scroll-native .dt-canvas {
+  overflow: auto;
+  max-width: 100%;
+}
+.dt-editor .dt-workspace.is-scroll-page-map .scrollbar-map {
+  width: 100%;
+  height: calc(100% - 26px);
+}
+.dt-editor .dt-workspace.is-scroll-page-map .scrollbar-map .scroll-element_outer {
+  right: auto;
+  top: auto;
+  left: 2px;
+  bottom: 2px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  overflow: hidden;
+}
+.dt-editor .dt-workspace.is-scroll-page-map .scrollbar-map .scroll-element_size {
+  z-index: 1;
+  background: rgba(179, 225, 232, .1);
+}
+.dt-editor .dt-workspace.is-scroll-page-map .scrollbar-map .scroll-element_size .scroll-element_track {
+  background: rgba(179, 225, 232, .1);
+}
+.dt-editor .dt-workspace.is-scroll-page-map .scrollbar-map .bg-map {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+.dt-editor .dt-workspace .dt-canvas {
+  display: inline-block;
+  position: relative;
+  left: 0;
+  top: 0;
+  background: #CDDC39;
+  overflow: auto;
+}
+.dt-editor .dt-workspace .dt-canvas > svg {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.dt-editor .dt-workspace .dt-c-grid {
+  pointer-events: none;
+}
+.dt-editor .dt-workspace .dt-c-bg {
+  outline: none;
+}
+.dt-editor .dt-workspace .dt-node {
+  cursor: move;
+  will-change: transform;
+  outline: none;
+}
+.dt-editor .dt-workspace .dt-node.hovered .node-rect,
+.dt-editor .dt-workspace .dt-node.selected .node-rect {
+  stroke: #ff7f0e;
+}
+.dt-editor .dt-workspace .dt-line.line-splice .path-line {
+  stroke-dasharray: 15, 8;
+}
+.dt-editor .dt-workspace .dt-line .path-line {
+  stroke: #888;
+  stroke-width: 3;
+  fill: none;
+  outline: none;
+}
+.dt-editor .dt-workspace .dt-line .path-line.selected,
+.dt-editor .dt-workspace .dt-line .path-line.hovered {
+  stroke: #ff7f0e;
+}
+.dt-editor .dt-workspace .dt-line .path-line.dotted {
+  stroke-dasharray: 10;
+}
+.dt-editor .dt-workspace .node-rect {
+  stroke: #999;
+  cursor: move;
+  stroke-width: 2;
+  outline: none;
+}
+.dt-editor .dt-workspace .node-label {
+  pointer-events: none;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  stroke: none;
+}
+.dt-editor .dt-workspace .node-status {
+  stroke: #666;
+  stroke-width: 2px;
+}
+.dt-editor .dt-workspace .port.inputs {
+  -webkit-transform: translate(-5px, 10px);
+          transform: translate(-5px, 10px);
+}
+.dt-editor .dt-workspace .port .node-port {
+  stroke: #999;
+  stroke-width: 1;
+  fill: #ddd;
+}
+.dt-editor .dt-workspace .port .node-port.hovered {
+  stroke: #ff7f0e;
+  fill: #ff7f0e;
+}
+.dt-editor .dt-workspace .port .node-port.hovered.node-port-output {
+  cursor: crosshair;
+}
+.dt-editor .dt-footer {
+  position: relative;
+  width: 100%;
+  height: 26px;
+  min-height: 26px;
+  max-height: 26px;
+  padding: 0 5px;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: row;
+          flex-direction: row;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: end;
+      -ms-flex-pack: end;
+          justify-content: flex-end;
+  -ms-flex-wrap: nowrap;
+      flex-wrap: nowrap;
+  border-top: 1px solid #bbb;
+  background: #f3f3f3;
+}
+.dt-editor .dt-footer .dt-btn {
+  font-size: 12px;
+  margin: 0 3px;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  width: 16px;
+  height: 16px;
+  line-height: 16px;
+  background: #fff;
+}
+.dt-editor .dt-footer .dt-btn .dt-icon {
+  position: relative;
+  top: 0px;
+}
+.dt-editor .dt-footer .dt-btn:hover {
+  background: #ddd;
+}
+.dt-editor .dt-footer .dt-menu {
+  display: none;
+  font-size: 12px;
+  position: absolute;
+  z-index: 10;
+  right: 5px;
+  bottom: 25px;
+  background: #f3f3f3;
+  color: #333;
+  width: 115px;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  border: 1px solid #ddd;
+}
+.dt-editor .dt-footer .dt-menu .dt-divider {
+  border-bottom: 1px solid #999;
+}
+.dt-editor .dt-footer .dt-menu .ui-menu-item {
+  padding: 3px 10px;
+}
+.dt-editor .dt-footer .dt-menu .ui-menu-item .dt-chk {
+  position: relative;
+  top: 2px;
+  margin-right: 2px;
+}
+.dt-editor .dt-footer .dt-menu .ui-menu-item:hover {
+  background: #9e9e9e;
+  color: #fff;
+}
+.dt-editor .dt-footer .dt-menu.ui-menu .ui-state-focus,
+.dt-editor .dt-footer .dt-menu.ui-menu .ui-state-active {
+  margin: 0;
+}
+.dt-editor .dt-side-bar {
+  position: relative;
+  display: -webkit-inline-box;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-align: start;
+      -ms-flex-align: start;
+          align-items: flex-start;
+  -webkit-box-pack: start;
+      -ms-flex-pack: start;
+          justify-content: flex-start;
+  -ms-flex-wrap: nowrap;
+      flex-wrap: nowrap;
+  min-width: 315px;
+  width: 315px;
+  height: 100%;
+  z-index: 0;
+  background: #f3f3f3;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  overflow: hidden;
+}
+.dt-editor .dt-side-bar .dt-prop-box {
+  width: 100%;
+  -webkit-box-flex: 1;
+      -ms-flex-positive: 1;
+          flex-grow: 1;
+  background: #f3f3f3;
+}
+.dt-editor .dt-side-bar .dt-tip-box {
+  width: 100%;
+  height: 150px;
+  background: #fff;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-align: stretch;
+      -ms-flex-align: stretch;
+          align-items: stretch;
+  -webkit-box-pack: stretch;
+      -ms-flex-pack: stretch;
+          justify-content: stretch;
+  -ms-flex-wrap: nowrap;
+      flex-wrap: nowrap;
+  font-size: 14px;
+  line-height: 2;
+}
+.dt-editor .dt-side-bar .dt-tip-box.scroll-content {
+  padding: 10px;
+}
+.dt-editor .dt-side-bar .help-key {
+  border: 1px solid #ddd;
+  padding: 4px;
+  border-radius: 3px;
+  background: #f6f6f6;
+  font-family: Courier, monospace;
+  -webkit-box-shadow: #999 1px 1px 1px;
+          box-shadow: #999 1px 1px 1px;
+}
+.dt-editor .divider-line {
+  position: absolute;
+  top: 0px;
+  right: 315px;
+  width: 10px;
+  z-index: 1;
+  cursor: col-resize;
+  background: #f3f3f3;
+  height: 100%;
+  border: 1px solid #bbb;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+}
+.dt-editor .divider-line.ui-draggable-dragging {
+  border: 1px dashed #bbb;
+  opacity: .5;
+}
+.dt-editor .divider-line:before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  height: 70px;
+  width: 4px;
+  -webkit-transform: translateX(-50%) translateY(-50%);
+          transform: translateX(-50%) translateY(-50%);
+  background: #ccc;
+}
+.dt-editor .divider-horizonal {
+  position: absolute;
+  bottom: 150px;
+  left: 0;
+  width: 100%;
+  height: 8px;
+  z-index: 11;
+  cursor: row-resize;
+  background: #f3f3f3;
+  border-top: 1px solid #bbb;
+  border-bottom: 1px solid #bbb;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+}
+.dt-editor .divider-horizonal.ui-draggable-dragging {
+  border: 1px dashed #bbb;
+  opacity: .5;
+}
+.dt-editor .divider-horizonal:before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 70px;
+  height: 2px;
+  -webkit-transform: translateX(-50%) translateY(-50%);
+          transform: translateX(-50%) translateY(-50%);
+  background: #ccc;
+}
+.dt-editor .ui-accordion .ui-accordion-header {
+  color: #666;
+  outline: none;
+  border-bottom: 1px solid #ccc;
+  position: relative;
+  background: #f3f3f3;
+  cursor: pointer;
+  text-align: left;
+  padding: 9px;
+  font-weight: bold;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  margin-top: 0;
+}
+.dt-editor .ui-accordion .ui-accordion-header .ui-accordion-header-icon {
+  display: none;
+  position: absolute;
+  top: 15px;
+  left: 10px;
+  border: 4px solid transparent;
+  border-top-color: #666;
+  -webkit-transform-origin: top center;
+          transform-origin: top center;
+  -webkit-transition: all .2s linear;
+  transition: all .2s linear;
+}
+.dt-editor .ui-accordion .ui-accordion-header.ui-accordion-header-collapsed .ui-accordion-header-icon {
+  top: 16px;
+  -webkit-transform: rotateZ(-90deg);
+          transform: rotateZ(-90deg);
+}
+.dt-editor .ui-accordion .ui-accordion-content {
+  padding: 5px 20px;
+  background: #fff;
+}
+/*!
+ * jQuery UI Draggable 1.12.1
+ * http://jqueryui.com
+ *
+ * Copyright jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ */
+.ui-draggable-handle {
+  -ms-touch-action: none;
+  touch-action: none;
+}
+/*!
+ * jQuery UI Accordion 1.12.1
+ * http://jqueryui.com
+ *
+ * Copyright jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ *
+ * http://api.jqueryui.com/accordion/#theming
+ */
+.ui-accordion .ui-accordion-header {
+  display: block;
+  cursor: pointer;
+  position: relative;
+  margin: 2px 0 0 0;
+  padding: .5em .5em .5em .7em;
+  font-size: 100%;
+}
+.ui-accordion .ui-accordion-content {
+  padding: 1em 2.2em;
+  border-top: 0;
+  overflow: auto;
+}
 /*!
  * jQuery UI Menu 1.12.1
  * http://jqueryui.com
@@ -58,39 +603,4 @@
 .ui-menu .ui-menu-icon {
   left: auto;
   right: 0;
-}
-/*!
- * jQuery UI Draggable 1.12.1
- * http://jqueryui.com
- *
- * Copyright jQuery Foundation and other contributors
- * Released under the MIT license.
- * http://jquery.org/license
- */
-.ui-draggable-handle {
-  -ms-touch-action: none;
-  touch-action: none;
-}
-/*!
- * jQuery UI Accordion 1.12.1
- * http://jqueryui.com
- *
- * Copyright jQuery Foundation and other contributors
- * Released under the MIT license.
- * http://jquery.org/license
- *
- * http://api.jqueryui.com/accordion/#theming
- */
-.ui-accordion .ui-accordion-header {
-  display: block;
-  cursor: pointer;
-  position: relative;
-  margin: 2px 0 0 0;
-  padding: .5em .5em .5em .7em;
-  font-size: 100%;
-}
-.ui-accordion .ui-accordion-content {
-  padding: 1em 2.2em;
-  border-top: 0;
-  overflow: auto;
 }

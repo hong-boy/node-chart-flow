@@ -192,5 +192,3 @@
         }
     }
 </script>
-
-<style lang="less" src="./css/main.less"></style>
