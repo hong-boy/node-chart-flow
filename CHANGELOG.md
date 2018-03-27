@@ -1,3 +1,16 @@
+<a name="0.0.12"></a>
+## [0.0.12](https://github.com/hong-boy/node-chart-flow/compare/v0.0.10...v0.0.12) (2018-03-27)
+
+
+### Features
+
+* release 0.0.11 ([5d57f5d](https://github.com/hong-boy/node-chart-flow/commit/5d57f5d))
+* release 0.0.12 ([5ea7d65](https://github.com/hong-boy/node-chart-flow/commit/5ea7d65))
+* 新增api ([da5898a](https://github.com/hong-boy/node-chart-flow/commit/da5898a))
+* 新增api-getNodeDatumById ([2a2d41b](https://github.com/hong-boy/node-chart-flow/commit/2a2d41b))
+
+
+
 <a name="0.0.11"></a>
 ## [0.0.11](https://github.com/hong-boy/node-chart-flow/compare/v0.0.3...v0.0.11) (2018-03-27)
 
