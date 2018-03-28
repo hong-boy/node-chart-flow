@@ -48,6 +48,7 @@ export default {
     EVENT_DELETED_NODE: 'deleted-node', // 节点被删除后触发的事件
     EVENT_CLICKED_NODE: 'clicked-node', // 节点单击事件
     EVENT_PASTED_NODE: 'pasted-node', // 节点被粘贴事件
+    EVENT_ON_COMPLETED: 'on-completed', // Editor初始化完成
     DESC_LIST: [ // 编辑器描述
         '您可以在设定中选择显示或隐藏这些提示。',
         '您可以用 <span class="help-key-block"><span class="help-key">delete</span></span> 删除选择的节点或链接。',

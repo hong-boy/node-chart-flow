@@ -91,22 +91,30 @@
                 thiz.editor.on('deleted-node', function (args) {
                     thiz.$emit('deletedNode', args)
                 });
-                thiz.editor.on('added-node', function (args) {
-                    thiz.$emit('addedNode', args)
+                thiz.editor.on('added-node', async function ({node}=args) {
+                    // 切换视图
+                    await thiz.switchPropView(node.datum());
+                    thiz.$emit('addedNode', node)
                 });
                 thiz.editor.on('pasted-node', function ({pastedNodes}=args) {
                     thiz.$emit('pastedNode', pastedNodes)
                 });
-                thiz.editor.on('clicked-node', function ({node}=args) {
+                thiz.editor.on('on-completed', async function (editor) {
+                    if(editor.config.data && editor.config.data.length){
+                        // 若有初始值
+//                        for(let item of editor.config.data){
+//                            let datum = editor.getNodeDatumById(item.nodeId);
+//                            await thiz.switchPropView(datum);
+//                        }
+//                        thiz.compt.id = null;
+//                        thiz.compt.node = null;
+                    }
+                    thiz.$emit('onCompleted', thiz);
+                });
+                thiz.editor.on('clicked-node', async function ({node}=args) {
                     // 切换视图
-                    thiz.compt.id = null;
-                    thiz.$nextTick(function () {
-                        let datum = node.datum();
-                        let nodeTypeId = datum.nodeTypeId;
-                        thiz.compt.id = nodeTypeId;
-                        thiz.compt.node = datum;
-                        thiz.$emit('clickedNode', node);
-                    });
+                    await thiz.switchPropView(node.datum());
+                    thiz.$emit('clickedNode', node);
                 });
             })
         },
@@ -131,6 +139,19 @@
             };
         },
         methods: {
+            switchPropView(datum){
+                // 切换视图
+                let thiz = this;
+                return new Promise(resolve=>{
+                    thiz.compt.id = null;
+                    setTimeout(function () {
+                        let nodeTypeId = datum.nodeTypeId;
+                        thiz.compt.id = nodeTypeId;
+                        thiz.compt.node = datum;
+                        resolve();
+                    }, 10);
+                })
+            },
             onInit4PageMap(){
                 // 开启定时任务刷新page-map
                 let thiz = this;

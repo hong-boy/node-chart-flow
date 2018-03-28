@@ -1334,14 +1334,27 @@ class ViewUtil {
         });
     }
 
-    static exportData(editor) {
-        // 导出数据
+    /**
+     * 导出数据
+     * @param editor
+     * @param{Boolean} cloned - 是否克隆 true-导出克隆节点 false-导出原结点
+     */
+    static exportData(editor, cloned=true) {
         let list = editor.getSVG().selectAll(`.${Constant.SVG_DT_NODE}`).nodes();
-        return list.map((node) => {
-            let { x, y, nodeId, nodeTypeId, prev, next, label, props, } = d3.select(node).datum();
-            let RealNodeType = editor.getNodeTypeById(nodeTypeId);
-            return $.extend(true, new RealNodeType(), { x, y, nodeId, prev, next, label, props, });
-        });
+        let res = null;
+        if(cloned){
+            res = list.map((node) => {
+                let { x, y, nodeId, nodeTypeId, prev, next, label, props, } = d3.select(node).datum();
+                let RealNodeType = editor.getNodeTypeById(nodeTypeId);
+                props = $.extend(true, {}, props);
+                return $.extend(true, new RealNodeType(), { x, y, nodeId, prev, next, label, props, });
+            });
+        }else {
+            res = list.map((node) => {
+                return d3.select(node).datum();
+            });
+        }
+        return res;
     }
 
     static importData(list, editor, selected = true, isNew = true) {
@@ -1401,6 +1414,12 @@ class ViewUtil {
         window.requestAnimationFrame(function () {
             let node = editor.getSVG().select(`#${nodeId}`);
             node.select('.node-label').text(label);
+            let nodeLabelFn = node.datum().label;
+            if($.isFunction(nodeLabelFn)){
+                nodeLabelFn.call(null, editor, label);
+            }else {
+                node.datum().label = label;
+            }
             ViewUtil._updateNodeSize(node, editor);
             ViewUtil.updateAllLinePath(editor);
         });
