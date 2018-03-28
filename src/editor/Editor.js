@@ -82,7 +82,7 @@ class Editor extends Events {
         util.renderTipBox(thiz);
         setTimeout(function () {
             // 绘制节点
-            if(config.data && config.data.length){
+            if (config.data && config.data.length) {
                 config.data.map((node) => {
                     node.isChanged = false;
                     node.isErrored = false;
@@ -127,7 +127,7 @@ class Editor extends Events {
      * @param{Boolean} cloned - （深克隆） true-导出克隆节点 false-导出原节点
      * @return {Array}
      */
-    exportData(cloned=true) {
+    exportData(cloned = true) {
         let list = util.exportData(this, cloned);
         this.log(list);
         return list;
