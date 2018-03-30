@@ -35,7 +35,7 @@ class NodeType {
         }, config.outputs);
         // 节点背景色
         this.color = config.color || Constant.DEFAULT_NODE_BG_COLOR;
-        // 节点label：字符串或者function
+        // 节点label：字符串
         this.label = config.label || '';
         // 节点图标
         this.icon = config.icon || null;
