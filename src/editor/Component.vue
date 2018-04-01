@@ -93,7 +93,7 @@
                 });
                 thiz.editor.on('added-node', async function ({node}=args) {
                     // 切换视图
-                    console.log('added-node', node);
+                    thiz.log('added-node', node);
                     await thiz.switchPropView(node.datum());
                     thiz.$emit('addedNode', node)
                 });
