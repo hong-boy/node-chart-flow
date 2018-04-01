@@ -509,18 +509,6 @@
   background: #fff;
 }
 /*!
- * jQuery UI Draggable 1.12.1
- * http://jqueryui.com
- *
- * Copyright jQuery Foundation and other contributors
- * Released under the MIT license.
- * http://jquery.org/license
- */
-.ui-draggable-handle {
-  -ms-touch-action: none;
-  touch-action: none;
-}
-/*!
  * jQuery UI Accordion 1.12.1
  * http://jqueryui.com
  *
@@ -542,6 +530,18 @@
   padding: 1em 2.2em;
   border-top: 0;
   overflow: auto;
+}
+/*!
+ * jQuery UI Draggable 1.12.1
+ * http://jqueryui.com
+ *
+ * Copyright jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ */
+.ui-draggable-handle {
+  -ms-touch-action: none;
+  touch-action: none;
 }
 /*!
  * jQuery UI Menu 1.12.1
