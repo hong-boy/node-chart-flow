@@ -98,18 +98,22 @@ class Editor extends Events {
      * 重绘画布上的节点
      * @param data
      */
-    reRenderNodes(data){
+    reRenderNodes(data) {
         let thiz = this;
-        if(data){
+        if (data) {
             thiz.config.data = data;
             thiz._setCopyedNodes([]);
             // 删除节点
             thiz.getSVG()
                 .selectAll(`.${Constant.SVG_DT_NODE}`)
                 .nodes()
-                .forEach(item=>util.deleteNode(d3.select(item), thiz));
+                .forEach((item) => {
+ return util.deleteNode(d3.select(item), thiz);
+});
             // 添加节点
-            data.forEach(item=>(item.isChanged = item.isErrored = false));
+            data.forEach((item) => {
+ return (item.isChanged = item.isErrored = false);
+});
             thiz.importData(data, false, false);
             thiz.emit(Constant.EVENT_ON_RERENDER_NODES, data);
         }
