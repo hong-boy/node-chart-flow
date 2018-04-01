@@ -94,6 +94,27 @@ class Editor extends Events {
         }, 1);
     }
 
+    /**
+     * 重绘画布上的节点
+     * @param data
+     */
+    reRenderNodes(data){
+        let thiz = this;
+        if(data){
+            thiz.config.data = data;
+            thiz._setCopyedNodes([]);
+            // 删除节点
+            thiz.getSVG()
+                .selectAll(`.${Constant.SVG_DT_NODE}`)
+                .nodes()
+                .forEach(item=>util.deleteNode(d3.select(item), thiz));
+            // 添加节点
+            data.forEach(item=>(item.isChanged = item.isErrored = false));
+            thiz.importData(data, false, false);
+            thiz.emit(Constant.EVENT_ON_RERENDER_NODES, data);
+        }
+    }
+
     destroy() {
         this.config = null;
         this.___def.CopyedNodes.clear();
@@ -137,10 +158,10 @@ class Editor extends Events {
      * 导入
      * @param{Array} list - 数据格式请参考exportData方法的返回值
      * @param{Boolean} selected - 是否选中导入的节点
-     * @param{Boolean} fresh - 是否创建新的uuid
+     * @param{Boolean} isNew - 是否创建新的uuid
      */
-    importData(list, selected = true, fresh = true) {
-        util.importData(list, this, selected, fresh);
+    importData(list, selected = true, isNew = true) {
+        util.importData(list, this, selected, isNew);
     }
 
     /**
