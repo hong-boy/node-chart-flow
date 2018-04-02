@@ -99,17 +99,11 @@
                 thiz.editor.on('pasted-node', function ({pastedNodes}=args) {
                     thiz.$emit('pastedNode', pastedNodes)
                 });
-                thiz.editor.on('on-completed', async function (editor) {
-                    if(editor.config.data && editor.config.data.length){
-                        // 若有初始值
-//                        for(let item of editor.config.data){
-//                            let datum = editor.getNodeDatumById(item.nodeId);
-//                            await thiz.switchPropView(datum);
-//                        }
-//                        thiz.compt.id = null;
-//                        thiz.compt.node = null;
-                    }
+                thiz.editor.on('on-completed', function () {
                     thiz.$emit('onCompleted', thiz);
+                });
+                thiz.editor.on('on-reRender-nodes', function (nodes) {
+                    thiz.$emit('onReRenderNodes', thiz, nodes);
                 });
                 thiz.editor.on('clicked-node', async function ({node}=args) {
                     // 切换视图

@@ -81,7 +81,7 @@ class ViewUtil {
             .attr('y', 15)
             .attr('dy', '0.35em')
             .attr('text-anchor', 'start')
-            .text($.isFunction(nodeTypeConfig.label) ? nodeTypeConfig.label.call(null, editor) : nodeTypeConfig.label);
+            .text(nodeTypeConfig.label);
         // g.port.inputs
         if (nodeTypeConfig.inputs.enable) {
             let g = g4node.append('svg:g')

@@ -1,3 +1,25 @@
+<a name="0.0.14"></a>
+## [0.0.14](https://github.com/hong-boy/node-chart-flow/compare/v0.0.12...v0.0.14) (2018-04-01)
+
+
+### Features
+
+* label不再支持function ([1b13195](https://github.com/hong-boy/node-chart-flow/commit/1b13195))
+* 新增API ([f70dfcd](https://github.com/hong-boy/node-chart-flow/commit/f70dfcd))
+
+
+
+<a name="0.0.13"></a>
+## [0.0.13](https://github.com/hong-boy/node-chart-flow/compare/v0.0.12...v0.0.13) (2018-04-01)
+
+
+### Features
+
+* label不再支持function ([1b13195](https://github.com/hong-boy/node-chart-flow/commit/1b13195))
+* 新增API ([f70dfcd](https://github.com/hong-boy/node-chart-flow/commit/f70dfcd))
+
+
+
 <a name="0.0.12"></a>
 ## [0.0.12](https://github.com/hong-boy/node-chart-flow/compare/v0.0.10...v0.0.12) (2018-03-27)
 
