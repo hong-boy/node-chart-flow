@@ -984,9 +984,10 @@ class ViewUtil {
                             copyedNodes.forEach((item) => {
                                 let node = d3.select(item);
                                 let datum = node.datum();
+                                let props = $.extend(true, {}, datum.props);
                                 let RealNodeType = editor.getNodeTypeById(datum.nodeTypeId);
                                 list.push(
-                                    $.extend(true, new RealNodeType(), datum, { x: datum.x + 5, y: datum.y + 5, })
+                                    $.extend(true, new RealNodeType(), datum, { x: datum.x + 5, y: datum.y + 5, props})
                                 );
                             });
                             editor._setCopyedNodes(list);
