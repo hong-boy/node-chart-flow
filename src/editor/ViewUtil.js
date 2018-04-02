@@ -987,7 +987,7 @@ class ViewUtil {
                                 let props = $.extend(true, {}, datum.props);
                                 let RealNodeType = editor.getNodeTypeById(datum.nodeTypeId);
                                 list.push(
-                                    $.extend(true, new RealNodeType(), datum, { x: datum.x + 5, y: datum.y + 5, props})
+                                    $.extend(true, new RealNodeType(), datum, { x: datum.x + 5, y: datum.y + 5, props, })
                                 );
                             });
                             editor._setCopyedNodes(list);
