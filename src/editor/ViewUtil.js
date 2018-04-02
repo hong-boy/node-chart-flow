@@ -806,7 +806,8 @@ class ViewUtil {
         // TODO - 考虑config.prop属性被双向绑定的情况
         let srcDatum = sourceNode.datum();
         let RealNodeType = editor.getNodeTypeById(srcDatum.nodeTypeId);
-        let { x, y, prev, next, label, props, } = srcDatum;
+        let props = $.extend(true, {}, srcDatum.props);
+        let { x, y, prev, next, label} = srcDatum;
         let clonedDatum = $.extend(true, new RealNodeType(), { x, y, prev, next, label, props, });
         clonedDatum.nodeId = ViewUtil.uuid();
         // 节点坐标适当偏移
