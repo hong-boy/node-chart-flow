@@ -807,7 +807,7 @@ class ViewUtil {
         let srcDatum = sourceNode.datum();
         let RealNodeType = editor.getNodeTypeById(srcDatum.nodeTypeId);
         let props = $.extend(true, {}, srcDatum.props);
-        let { x, y, prev, next, label} = srcDatum;
+        let { x, y, prev, next, label, } = srcDatum;
         let clonedDatum = $.extend(true, new RealNodeType(), { x, y, prev, next, label, props, });
         clonedDatum.nodeId = ViewUtil.uuid();
         // 节点坐标适当偏移
