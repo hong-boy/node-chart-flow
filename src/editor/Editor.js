@@ -141,7 +141,7 @@ class Editor extends Events {
             $svg.find('g.dt-c-grid').remove();
             let width = parseInt($svg.attr('width'));
             let scale = width / settings.size;
-            SaveSVGAsPNG.svgAsPngUri($svg.get(0), {scale,}, function (uri) {
+            SaveSVGAsPNG.svgAsPngUri($svg.get(0), { scale, }, function (uri) {
                 resolve(uri);
             });
         });
@@ -345,7 +345,7 @@ class Editor extends Events {
 
     updateNodeProps(nodeId, props) {
         let thiz = this;
-        let node = thiz.getSVG().select(`#\\${nodeId}`);
+        let node = thiz.getSVG().select(`[id="${nodeId}"]`);
         let datum = node.datum();
         datum.props = props;
     }
@@ -370,10 +370,10 @@ class Editor extends Events {
     getNodeDatumById(nid) {
         // 根据nodeId获取datum
         if (nid) {
-            let node = this.getSVG().select(`#\\${nid}`).node();
+            let node = this.getSVG().select(`[id="${nid}"]`).node();
             return d3.select(node).datum();
         }
     }
 }
 
-export {NodeType, Editor as default,};
+export { NodeType, Editor as default, };

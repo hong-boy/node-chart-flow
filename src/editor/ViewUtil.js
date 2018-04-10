@@ -706,13 +706,13 @@ class ViewUtil {
 
         (direction === BI_DIRECTION || direction === PREV_DIRECTION) && prev.forEach((nid) => {
             if (!res.has(nid)) {
-                let temp = ViewUtil.traverseNode(editor.getSVG().select(`#\\${nid}`), editor, res, 0);
+                let temp = ViewUtil.traverseNode(editor.getSVG().select(`[id="${nid}"]`), editor, res, 0);
                 res = new Set([...res, ...temp, nid]);
             }
         });
         (direction === BI_DIRECTION || direction === NEXT_DIRECTION) && next.forEach((nid) => {
             if (!res.has(nid)) {
-                let temp = ViewUtil.traverseNode(editor.getSVG().select(`#\\${nid}`), editor, res, 0);
+                let temp = ViewUtil.traverseNode(editor.getSVG().select(`[id="${nid}"]`), editor, res, 0);
                 res = new Set([...res, ...temp, nid]);
             }
         });
@@ -735,7 +735,7 @@ class ViewUtil {
                 // 若是shift + click，则选中整条路径上的节点
                 let nodeIds = ViewUtil.traverseNode(thiz, editor);
                 nodeIds.forEach((nid) => {
-                    editor.getSVG().select(`#\\${nid}`).classed('selected', true);
+                    editor.getSVG().select(`[id="${nid}"]`).classed('selected', true);
                 });
             } else if (d3.event.ctrlKey) {
                 // 若是ctrl + click，则选中/取消选中该节点
@@ -1414,7 +1414,7 @@ class ViewUtil {
 
     static updateNodeLabel(editor, nodeId, label) {
         window.requestAnimationFrame(function () {
-            let node = editor.getSVG().select(`#\\${nodeId}`);
+            let node = editor.getSVG().select(`[id="${nodeId}"]`);
             node.select('.node-label').text(label);
             let nodeLabelFn = node.datum().label;
             if ($.isFunction(nodeLabelFn)) {
