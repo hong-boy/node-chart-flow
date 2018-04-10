@@ -1,3 +1,23 @@
+<a name="0.0.17"></a>
+## [0.0.17](https://github.com/hong-boy/node-chart-flow/compare/v0.0.12...v0.0.17) (2018-04-10)
+
+
+### Bug Fixes
+
+* 修复cloneNodes方法props存的是引用 ([639c1dc](https://github.com/hong-boy/node-chart-flow/commit/639c1dc))
+* 修复ctrl+c逻辑中props存的是引用 ([25c34ed](https://github.com/hong-boy/node-chart-flow/commit/25c34ed))
+
+
+### Features
+
+* label不再支持function ([1b13195](https://github.com/hong-boy/node-chart-flow/commit/1b13195))
+* release 0.0.16 ([1d206e8](https://github.com/hong-boy/node-chart-flow/commit/1d206e8))
+* 支持id为数字的选择器 ([1175612](https://github.com/hong-boy/node-chart-flow/commit/1175612))
+* 支持id为数字的选择器 ([66aeb52](https://github.com/hong-boy/node-chart-flow/commit/66aeb52))
+* 新增API ([f70dfcd](https://github.com/hong-boy/node-chart-flow/commit/f70dfcd))
+
+
+
 <a name="0.0.14"></a>
 ## [0.0.14](https://github.com/hong-boy/node-chart-flow/compare/v0.0.12...v0.0.14) (2018-04-01)
 
