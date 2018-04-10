@@ -509,29 +509,6 @@
   background: #fff;
 }
 /*!
- * jQuery UI Accordion 1.12.1
- * http://jqueryui.com
- *
- * Copyright jQuery Foundation and other contributors
- * Released under the MIT license.
- * http://jquery.org/license
- *
- * http://api.jqueryui.com/accordion/#theming
- */
-.ui-accordion .ui-accordion-header {
-  display: block;
-  cursor: pointer;
-  position: relative;
-  margin: 2px 0 0 0;
-  padding: .5em .5em .5em .7em;
-  font-size: 100%;
-}
-.ui-accordion .ui-accordion-content {
-  padding: 1em 2.2em;
-  border-top: 0;
-  overflow: auto;
-}
-/*!
  * jQuery UI Menu 1.12.1
  * http://jqueryui.com
  *
@@ -591,6 +568,29 @@
 .ui-menu .ui-menu-icon {
   left: auto;
   right: 0;
+}
+/*!
+ * jQuery UI Accordion 1.12.1
+ * http://jqueryui.com
+ *
+ * Copyright jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ *
+ * http://api.jqueryui.com/accordion/#theming
+ */
+.ui-accordion .ui-accordion-header {
+  display: block;
+  cursor: pointer;
+  position: relative;
+  margin: 2px 0 0 0;
+  padding: .5em .5em .5em .7em;
+  font-size: 100%;
+}
+.ui-accordion .ui-accordion-content {
+  padding: 1em 2.2em;
+  border-top: 0;
+  overflow: auto;
 }
 /*!
  * jQuery UI Draggable 1.12.1

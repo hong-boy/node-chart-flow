@@ -48,7 +48,7 @@ class Editor extends Events {
         this.$sidebar = this.$el.find('.dt-side-bar');
         this.$canvas = this.$workspace.find(
             config.settings.scrollbarStyle === Constant.SCROLLBAR_PRETTY ?
-            '.dt-canvas .dt-canvas' : '.dt-canvas'
+                '.dt-canvas .dt-canvas' : '.dt-canvas'
         );
         this.$canvas.attr('id', Constant.CANVAS_ID);
 
@@ -108,12 +108,12 @@ class Editor extends Events {
                 .selectAll(`.${Constant.SVG_DT_NODE}`)
                 .nodes()
                 .forEach((item) => {
- return util.deleteNode(d3.select(item), thiz);
-});
+                    return util.deleteNode(d3.select(item), thiz);
+                });
             // 添加节点
             data.forEach((item) => {
- return (item.isChanged = item.isErrored = false);
-});
+                return (item.isChanged = item.isErrored = false);
+            });
             thiz.importData(data, false, false);
             thiz.emit(Constant.EVENT_ON_RERENDER_NODES, data);
         }
@@ -141,7 +141,7 @@ class Editor extends Events {
             $svg.find('g.dt-c-grid').remove();
             let width = parseInt($svg.attr('width'));
             let scale = width / settings.size;
-            SaveSVGAsPNG.svgAsPngUri($svg.get(0), { scale, }, function (uri) {
+            SaveSVGAsPNG.svgAsPngUri($svg.get(0), {scale,}, function (uri) {
                 resolve(uri);
             });
         });
@@ -345,7 +345,7 @@ class Editor extends Events {
 
     updateNodeProps(nodeId, props) {
         let thiz = this;
-        let node = thiz.getSVG().select(`#${nodeId}`);
+        let node = thiz.getSVG().select(`#\\${nodeId}`);
         let datum = node.datum();
         datum.props = props;
     }
@@ -370,10 +370,10 @@ class Editor extends Events {
     getNodeDatumById(nid) {
         // 根据nodeId获取datum
         if (nid) {
-            let node = this.getSVG().select(`#${nid}`).node();
+            let node = this.getSVG().select(`#\\${nid}`).node();
             return d3.select(node).datum();
         }
     }
 }
 
-export { NodeType, Editor as default, };
+export {NodeType, Editor as default,};
