@@ -1,5 +1,5 @@
-import Vue from 'vue';
-import { NodeType } from '../../dist/bundle.js';
+import Vue from 'vue'
+import NodeType from '../../editor/NodeType'
 
 const NODE_DESC = require('./node_desc.json');
 
@@ -12,9 +12,7 @@ class AlarmNodeType extends NodeType {
     }
 
     static component() {
-        Vue.component(AlarmNodeType.id(), (resolve) => {
- return require(['./AlarmNodeType.vue'], resolve);
-});
+        Vue.component(AlarmNodeType.id(), resolve=>require(['./AlarmNodeType.vue'], resolve));
     }
 
     static tip() {
@@ -24,7 +22,6 @@ class AlarmNodeType extends NodeType {
     validate(from, to, editor) {
         let flag = true;
         editor.getRelations().forEach((lineItem) => {
-            console.log(lineItem.to, to, lineItem.to === to);
             if (lineItem.to.node() === to.node()) {
                 // 只允许有一个输入
                 flag = false;
@@ -37,14 +34,10 @@ class AlarmNodeType extends NodeType {
         super();
         this.props = {};
         this.nodeTypeId = AlarmNodeType.id();
-        this.icon = require('../editor/css/icon/default.png');
+        // this.icon = require('../../../assets/image/node-default.png');
         this.color = '#E59191';
         this.label = '告警';
-        this.inputs = {
-            enable: true,
-            max: 1,
-            tip: '描述...',
-        };
+        this.inputs = {enable:true};
         this.outputs = {
             enable: false,
         };

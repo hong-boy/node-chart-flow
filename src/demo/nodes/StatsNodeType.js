@@ -1,5 +1,5 @@
-import Vue from 'vue';
-import { NodeType } from '../../dist/bundle.js';
+import NodeType from '../../editor/NodeType'
+import Vue from 'vue'
 
 /**
  * 数据统计
@@ -10,9 +10,7 @@ class StatsNodeType extends NodeType {
     }
 
     static component() {
-        Vue.component(StatsNodeType.id(), (resolve) => {
- return require(['./StatsNodeType.vue'], resolve);
-});
+        Vue.component(StatsNodeType.id(), resolve=>require(['./StatsNodeType.vue'], resolve));
     }
 
     validate(from, to, editor) {
@@ -31,18 +29,11 @@ class StatsNodeType extends NodeType {
         this.icon = null;
         this.props = {};
         this.nodeTypeId = StatsNodeType.id();
+        // this.icon = require('../../../assets/image/node-default.png');
         this.color = '#C2EDC0';
-        this.label = function (editor) {
-            return '数据统计';
-        };
-        this.inputs = {
-            enable: true,
-            tip: '描述...',
-        };
-        this.outputs = {
-            enable: true,
-            tip: '描述...',
-        };
+        this.label = '数据统计';
+        this.inputs = {enable: true};
+        this.outputs = {enable: true};
     }
 }
 

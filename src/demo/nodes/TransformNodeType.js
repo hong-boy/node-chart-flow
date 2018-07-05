@@ -1,5 +1,5 @@
-import Vue from 'vue';
-import { NodeType } from '../../dist/bundle.js';
+import NodeType from '../../editor/NodeType'
+import Vue from 'vue'
 
 /**
  * 数据转换
@@ -10,9 +10,7 @@ class TransformNodeType extends NodeType {
     }
 
     static component() {
-        Vue.component(TransformNodeType.id(), (resolve) => {
- return require(['./TransformNodeType.vue'], resolve);
-});
+        Vue.component(TransformNodeType.id(), resolve=>require(['./TransformNodeType.vue'], resolve));
     }
 
     validate(from, to, editor) {
@@ -32,17 +30,10 @@ class TransformNodeType extends NodeType {
         this.props = {};
         this.nodeTypeId = TransformNodeType.id();
         this.color = '#E8E7AF';
-        this.label = function (editor) {
-            return '数据转换';
-        };
-        this.inputs = {
-            enable: true,
-            tip: '描述...',
-        };
-        this.outputs = {
-            enable: true,
-            tip: '描述...',
-        };
+        // this.icon = require('../../../assets/image/node-default.png');
+        this.label = '数据转换';
+        this.inputs = {enable: true};
+        this.outputs = {enable: true};
     }
 }
 

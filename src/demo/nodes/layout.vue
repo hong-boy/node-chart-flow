@@ -16,11 +16,12 @@
 </template>
 
 <script type="text/ecmascript-6">
+    import SourceNodeType from './SourceNodeType'
+    import TransformNodeType from './TransformNodeType'
+    import StatsNodeType from './StatsNodeType'
+    import AlarmNodeType from './AlarmNodeType'
 
     export default {
-        // components: {
-        //     'node-chart-flow': resolve=>require(['../../dist/bundle.js'], resolve)
-        // },
         data(){
             return {
                 nodes: require('./data.json')
@@ -30,26 +31,18 @@
             clickedNode(args){
                 console.log('clickedNode', args);
             },
-            addedNode({node}=args){
-                console.log('addedNode', node.datum());
+            addedNode(args){
+                // console.log('addedNode', node.datum());
             },
             addedLine(){},
             deletedNode(){},
             deletedLine(){},
             async registerNodeType(editor){
                 // 注册节点类型
-                await editor.registerNodeType(function () {
-                    return new Promise(resolve=>require(['./SourceNodeType'], resolve));
-                });
-                await editor.registerNodeType(function () {
-                    return new Promise(resolve=>require(['./TransformNodeType'], resolve));
-                });
-                await editor.registerNodeType(function () {
-                    return new Promise(resolve=>require(['./StatsNodeType'], resolve));
-                });
-                await editor.registerNodeType(function () {
-                    return new Promise(resolve=>require(['./AlarmNodeType'], resolve));
-                });
+                editor.registerNodeType(()=>SourceNodeType);
+                editor.registerNodeType(()=>TransformNodeType);
+                editor.registerNodeType(()=>StatsNodeType);
+                editor.registerNodeType(()=>AlarmNodeType);
             },
         },
     }
